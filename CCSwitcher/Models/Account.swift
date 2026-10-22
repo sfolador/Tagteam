@@ -38,6 +38,12 @@ struct Account: Identifiable, Codable, Hashable {
     var isActive: Bool
     var lastUsed: Date?
     var customLabel: String?
+    /// User opted this account out of auto-switch: it is never switched to,
+    /// and auto-switch stands down while it is active. Optional so accounts
+    /// saved by older versions still decode.
+    var excludedFromAutoSwitch: Bool?
+
+    var isExcludedFromAutoSwitch: Bool { excludedFromAutoSwitch == true }
 
     /// Subscription type with first letter capitalized (e.g., "max" → "Max").
     var displaySubscriptionType: String? {

@@ -396,6 +396,16 @@ final class AppState: ObservableObject {
         log.info("[updateAccountLabel] Set label for \(account.email): \(trimmed ?? "nil")")
     }
 
+    func setExcludedFromAutoSwitch(_ account: Account, excluded: Bool) {
+        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else { return }
+        accounts[index].excludedFromAutoSwitch = excluded ? true : nil
+        if accounts[index].isActive {
+            activeAccount = accounts[index]
+        }
+        saveAccounts()
+        log.info("[setExcludedFromAutoSwitch] \(account.id) excluded=\(excluded)")
+    }
+
     func removeAccount(_ account: Account) {
         log.info("[removeAccount] Removing account \(account.id)")
         keychain.removeAccountBackup(forAccountId: account.id.uuidString)
@@ -510,6 +520,9 @@ final class AppState: ObservableObject {
     private func evaluateAutoSwitch() async {
         guard autoSwitchEnabled, !isEvaluatingAutoSwitch else { return }
         guard !isLoggingIn, !isSwitching, let active = activeAccount else { return }
+        // An opted-out account is never left automatically either: the user
+        // chose to be on it deliberately (e.g. a work account).
+        guard !active.isExcludedFromAutoSwitch else { return }
 
         // Cooldown: never auto-switch more than once per window.
         if let last = lastAutoSwitchAt, Date().timeIntervalSince(last) < autoSwitchCooldown {
@@ -517,7 +530,9 @@ final class AppState: ObservableObject {
         }
 
         // Only consider same-provider accounts (a Claude switch never touches Codex/Gemini).
-        let candidates = accounts.filter { $0.provider == active.provider && $0.id != active.id }
+        let candidates = accounts.filter {
+            $0.provider == active.provider && $0.id != active.id && !$0.isExcludedFromAutoSwitch
+        }
         let activeSampledThisCycle = (accountUsageSampledAt[active.id] ?? .distantPast) >= lastCycleStart
         let ranked = AutoSwitchEngine.rankedTargets(
             active: active,

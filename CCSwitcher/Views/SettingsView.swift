@@ -78,6 +78,23 @@ struct SettingsView: View {
                 }
             }
 
+            if autoSwitchEnabled && !appState.accounts.isEmpty {
+                Section {
+                    ForEach(appState.accounts) { account in
+                        Toggle(isOn: autoSwitchInclusion(for: account)) {
+                            Text(account.effectiveDisplayName(obfuscated: !showFullEmail))
+                            Text(account.displayEmail(obfuscated: !showFullEmail))
+                        }
+                    }
+                } header: {
+                    Text("Accounts used by auto-switch")
+                } footer: {
+                    Text("Excluded accounts are never switched to automatically, and auto-switch stays off while one of them is active.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section("Account display") {
                 Toggle("Show full email address", isOn: $showFullEmail)
             }
@@ -218,6 +235,13 @@ struct SettingsView: View {
         } catch {
             launchAtLogin = !enable // revert on failure
         }
+    }
+
+    private func autoSwitchInclusion(for account: Account) -> Binding<Bool> {
+        Binding(
+            get: { !account.isExcludedFromAutoSwitch },
+            set: { appState.setExcludedFromAutoSwitch(account, excluded: !$0) }
+        )
     }
 
     private var sessionLimitBarColor: Binding<Color> {
