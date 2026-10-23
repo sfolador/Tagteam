@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Tagteam alternative — Linked</title>
+  <defs>
+    <linearGradient id="body" x1="0%" y1="0%" x2="65%" y2="100%"><stop stop-color="#FFFEFA"/><stop offset="1" stop-color="#EDE9E1"/></linearGradient>
+    <path id="shell" d="M332 100 H692 C852 100 924 172 924 332 V692 C924 852 852 924 692 924 H332 C172 924 100 852 100 692 V332 C100 172 172 100 332 100 Z"/>
+  </defs>
+  <g fill="none" stroke="#1C2833" transform="translate(0 14)">
+    <use xlink:href="#shell" stroke-width="64" opacity="0.008"/><use xlink:href="#shell" stroke-width="48" opacity="0.012"/><use xlink:href="#shell" stroke-width="32" opacity="0.02"/><use xlink:href="#shell" stroke-width="18" opacity="0.035"/><use xlink:href="#shell" stroke-width="8" opacity="0.055"/>
+  </g>
+  <use xlink:href="#shell" fill="url(#body)"/>
+  <use xlink:href="#shell" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.75"/>
+  <!-- Two open links meet in the middle, like partners tagging hands. -->
+  <g fill="none" stroke-width="86" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M477 638 L386 729 Q332 783 278 729 L253 704 Q199 650 253 596 L414 435 Q468 381 522 435 L547 460" stroke="#303F4D"/>
+    <path d="M477 564 L452 539 Q398 485 452 431 L613 270 Q667 216 721 270 L746 295 Q800 349 746 403 L655 494" stroke="#E86D45"/>
+  </g>
+</svg>
