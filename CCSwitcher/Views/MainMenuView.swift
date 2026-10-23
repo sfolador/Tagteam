@@ -17,7 +17,9 @@ struct MainMenuView: View {
         GeometryReader { geo in
             let outer = AppStyle.popoverOuterPadding
             let stacked = geo.size.width < stackedLayoutThreshold
-            let columnWidth = (geo.size.width - 2 * outer - AppStyle.columnSpacing) / 2
+            let available = geo.size.width - 2 * outer - AppStyle.columnSpacing
+            let leftWidth = (available * AppStyle.accountsColumnFraction).rounded()
+            let rightWidth = available - leftWidth
 
             VStack(spacing: AppStyle.groupSpacing) {
                 ProfileBarView()
@@ -32,9 +34,9 @@ struct MainMenuView: View {
                 } else {
                     HStack(alignment: .top, spacing: AppStyle.columnSpacing) {
                         column { AccountsColumnView() }
-                            .frame(width: columnWidth)
+                            .frame(width: leftWidth)
                         column { StatsColumnView() }
-                            .frame(width: columnWidth)
+                            .frame(width: rightWidth)
                     }
                     .frame(maxHeight: .infinity)
                 }

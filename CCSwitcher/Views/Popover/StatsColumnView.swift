@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Right popover column: promo, today's cost, activity, cost history.
+/// Right popover column: promo, compact costs, 14-day list.
 /// The shell owns the ScrollView, so this view adds none.
 struct StatsColumnView: View {
     var body: some View {
@@ -9,7 +9,6 @@ struct StatsColumnView: View {
                 PromoCard()
             }
             TodayCostCard()
-            ActivityCard()
             CostHistoryCard()
         }
     }

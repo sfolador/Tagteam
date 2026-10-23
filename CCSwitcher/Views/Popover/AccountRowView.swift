@@ -64,9 +64,19 @@ struct AccountRowView: View {
                 Image(systemName: "circle")
                     .font(.system(size: 7))
                     .foregroundStyle(.textSecondary)
-                nameBlock
+                VStack(alignment: .leading, spacing: 3) {
+                    nameBlock
+                    HStack(spacing: 6) {
+                        usageBlock
+                        if hasExtraUsage {
+                            Image(systemName: "bolt.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                }
+                .layoutPriority(1)
                 Spacer(minLength: 4)
-                usageBlock
                 switchButton
                 AccountActionsMenu(account: account, model: actions)
             }
@@ -88,13 +98,16 @@ struct AccountRowView: View {
                     .font(.body.weight(.medium))
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .layoutPriority(2)
                 if let sub = account.displaySubscriptionType {
-                    Badge(text: sub, color: .brand)
-                }
-                if hasExtraUsage {
-                    Image(systemName: "bolt.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
+                    Text(sub)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.brand)
+                        .lineLimit(1)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(Color.brand.opacity(0.15), in: Capsule())
+                        .fixedSize()
                 }
             }
         }

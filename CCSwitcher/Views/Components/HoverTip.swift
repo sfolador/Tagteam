@@ -9,15 +9,23 @@ struct HoverTip<Tip: View, Content: View>: View {
     @State private var isHovering = false
     @Environment(\.locale) private var locale
 
+    private static var tipWidth: CGFloat { 240 }
+
     var body: some View {
         content
             .onHover { isHovering = $0 }
             .popover(isPresented: $isHovering, arrowEdge: .bottom) {
+                // A popover content view gets no proposed width: `maxWidth` alone let the
+                // text report a huge ideal height. An explicit width makes it wrap.
+                // Tips must be pure text built from values captured at creation: the
+                // popover does not inherit `appState` / `menuBarConfig`.
                 tip
                     .font(.caption)
-                    .padding(8)
-                    .frame(maxWidth: 240, alignment: .leading)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                    .frame(width: Self.tipWidth, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(10)
                     .environment(\.locale, locale)
             }
     }

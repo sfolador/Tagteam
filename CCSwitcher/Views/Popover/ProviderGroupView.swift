@@ -163,15 +163,23 @@ struct ProviderGroupView: View {
                         .font(.body.weight(.semibold))
                         .lineLimit(1)
                         .truncationMode(.middle)
-                    Spacer(minLength: 4)
+                        .layoutPriority(2)
                     if !entry.isLive {
                         Badge(text: String(localized: "Not live", bundle: L10n.bundle), color: .gray)
                     } else if !entry.isInScope {
                         Badge(text: String(localized: "Not in this profile", bundle: L10n.bundle), color: .gray)
                     }
                     if let sub = account.displaySubscriptionType {
-                        Badge(text: sub, color: .brand)
+                        Text(sub)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.brand)
+                            .lineLimit(1)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.brand.opacity(0.15), in: Capsule())
+                            .fixedSize()
                     }
+                    Spacer(minLength: 4)
                 }
                 if !entry.isLive {
                     switchButton(account)

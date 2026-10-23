@@ -30,14 +30,12 @@
 "Claude Code Account Switcher" = "Claude Code アカウント切り替えツール";
 "Version %@" = "バージョン %@";
 "Easily switch between Claude Code accounts and monitor usage." = "Claude Code アカウントの切り替えと使用状況の監視を簡単に。";
+"Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by [Xueshi Qiao](https://xueshi.dev)" = "[Xueshi Qiao](https://xueshi.dev) の [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) をベースに開発";
+"Codex support based on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese" = "Codex 対応は Lampese の [Codex Switcher](https://github.com/Lampese/codex-switcher) をベースにしています";
+"Portions © 2026 Xueshi Qiao" = "一部 © 2026 Xueshi Qiao";
 
 /* Usage Dashboard */
-"Turns" = "ターン";
 "Active" = "アクティブ";
-"Lines" = "行数";
-"Messages you sent to Claude Code today" = "本日 Claude Code に送信したメッセージ数";
-"Estimated total time Claude worked for you today. Parallel sessions stack. Idle gaps >10 min excluded. This is an approximation based on message timestamps, not exact." = "本日 Claude があなたのために作業した推定合計時間。並列セッションは合算されます。10 分以上のアイドル時間は除外。メッセージのタイムスタンプに基づく概算値です。";
-"Estimated lines of code written by Claude via Edit/Write tools" = "Claude が Edit/Write ツールで書いた推定コード行数";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "Claude Code 使用量の API 換算コスト（参考値）。";
 "Extra usage" = "追加使用量";
 "On" = "オン";
@@ -212,9 +210,6 @@
 "Log in with browser" = "ブラウザでログイン";
 "Add current login" = "現在のログインを追加";
 "Get started" = "はじめる";
-"Activity" = "アクティビティ";
-"Claude Code · This Mac" = "Claude Code · この Mac";
-"No Claude Code activity yet today" = "今日の Claude Code アクティビティはまだありません";
 "Log in new account…" = "新しいアカウントでログイン…";
 "Add" = "追加";
 "Last 14 days" = "過去14日間";
@@ -232,7 +227,6 @@
 "Re-login" = "再ログイン";
 "Cost is computed from your local Claude Code session logs (jsonl files) under ~/.claude/projects/." = "コストは、~/.claude/projects/ にあるローカルの Claude Code セッションログ（jsonl ファイル）から算出されます。";
 "Verified against ccusage %@ on %@ — %lld-day total matched to the cent." = "ccusage %1$@ で %2$@ に検証済み — %3$lld日間の合計がセント単位まで一致しました。";
-"API-equivalent" = "API換算";
 "7 days" = "7日間";
 "30 days" = "30日間";
 "Refreshing…" = "更新中…";
@@ -242,3 +236,5 @@
 "%@ resets in %@" = "%@ は %@ 後にリセット";
 "%@: %@ · resets %@" = "%@：%@ · %@ 後にリセット";
 "%@: %@" = "%@：%@";
+"Costs" = "コスト";
+"Claude Code · This Mac · API-equivalent" = "Claude Code · この Mac · API換算";

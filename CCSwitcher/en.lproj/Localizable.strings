@@ -30,14 +30,12 @@
 "Claude Code Account Switcher" = "Claude Code Account Switcher";
 "Version %@" = "Version %@";
 "Easily switch between Claude Code accounts and monitor usage." = "Easily switch between Claude Code accounts and monitor usage.";
+"Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by [Xueshi Qiao](https://xueshi.dev)" = "Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by [Xueshi Qiao](https://xueshi.dev)";
+"Codex support based on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese" = "Codex support based on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese";
+"Portions © 2026 Xueshi Qiao" = "Portions © 2026 Xueshi Qiao";
 
 /* Usage Dashboard */
-"Turns" = "Turns";
 "Active" = "Active";
-"Lines" = "Lines";
-"Messages you sent to Claude Code today" = "Messages you sent to Claude Code today";
-"Estimated total time Claude worked for you today. Parallel sessions stack. Idle gaps >10 min excluded. This is an approximation based on message timestamps, not exact." = "Estimated total time Claude worked for you today. Parallel sessions stack. Idle gaps >10 min excluded. This is an approximation based on message timestamps, not exact.";
-"Estimated lines of code written by Claude via Edit/Write tools" = "Estimated lines of code written by Claude via Edit/Write tools";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "Estimated API-equivalent cost of your Claude Code usage, for reference only.";
 "Extra usage" = "Extra usage";
 "On" = "On";
@@ -80,7 +78,6 @@
 "Double limits: 2 PM - 8 AM ET & Weekends" = "Double limits: 2 PM - 8 AM ET & Weekends";
 
 /* About */
-"More apps at xueshi.dev" = "More apps at xueshi.dev";
 "© 2026 Xueshi Qiao" = "© 2026 Xueshi Qiao";
 
 /* Menu Bar */
@@ -216,9 +213,6 @@
 "Log in with browser" = "Log in with browser";
 "Add current login" = "Add current login";
 "Get started" = "Get started";
-"Activity" = "Activity";
-"Claude Code · This Mac" = "Claude Code · This Mac";
-"No Claude Code activity yet today" = "No Claude Code activity yet today";
 "Log in new account…" = "Log in new account…";
 "Add" = "Add";
 "Last 14 days" = "Last 14 days";
@@ -236,7 +230,6 @@
 "Re-login" = "Re-login";
 "Cost is computed from your local Claude Code session logs (jsonl files) under ~/.claude/projects/." = "Cost is computed from your local Claude Code session logs (jsonl files) under ~/.claude/projects/.";
 "Verified against ccusage %@ on %@ — %lld-day total matched to the cent." = "Verified against ccusage %@ on %@ — %lld-day total matched to the cent.";
-"API-equivalent" = "API-equivalent";
 "7 days" = "7 days";
 "30 days" = "30 days";
 "Refreshing…" = "Refreshing…";
@@ -246,3 +239,5 @@
 "%@ resets in %@" = "%@ resets in %@";
 "%@: %@ · resets %@" = "%@: %@ · resets %@";
 "%@: %@" = "%@: %@";
+"Costs" = "Costs";
+"Claude Code · This Mac · API-equivalent" = "Claude Code · This Mac · API-equivalent";

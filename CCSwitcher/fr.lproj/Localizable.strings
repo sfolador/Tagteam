@@ -30,14 +30,12 @@
 "Claude Code Account Switcher" = "Gestionnaire de comptes Claude Code";
 "Version %@" = "Version %@";
 "Easily switch between Claude Code accounts and monitor usage." = "Basculez facilement entre les comptes Claude Code et surveillez l'utilisation.";
+"Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by [Xueshi Qiao](https://xueshi.dev)" = "Basé sur [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) de [Xueshi Qiao](https://xueshi.dev)";
+"Codex support based on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese" = "Prise en charge de Codex basée sur [Codex Switcher](https://github.com/Lampese/codex-switcher) de Lampese";
+"Portions © 2026 Xueshi Qiao" = "Certaines parties © 2026 Xueshi Qiao";
 
 /* Usage Dashboard */
-"Turns" = "Tours";
 "Active" = "Actif";
-"Lines" = "Lignes";
-"Messages you sent to Claude Code today" = "Messages envoyés à Claude Code aujourd'hui";
-"Estimated total time Claude worked for you today. Parallel sessions stack. Idle gaps >10 min excluded. This is an approximation based on message timestamps, not exact." = "Temps total estimé pendant lequel Claude a travaillé pour vous aujourd'hui. Les sessions parallèles sont cumulées. Les pauses de plus de 10 min sont exclues. Approximation basée sur les horodatages des messages.";
-"Estimated lines of code written by Claude via Edit/Write tools" = "Lignes de code estimées écrites par Claude via les outils Edit/Write";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "Coût équivalent API estimé de votre utilisation de Claude Code, à titre indicatif uniquement.";
 "Extra usage" = "Utilisation supplémentaire";
 "On" = "Activé";
@@ -212,9 +210,6 @@
 "Log in with browser" = "Se connecter via le navigateur";
 "Add current login" = "Ajouter la connexion actuelle";
 "Get started" = "Commencer";
-"Activity" = "Activité";
-"Claude Code · This Mac" = "Claude Code · ce Mac";
-"No Claude Code activity yet today" = "Aucune activité Claude Code aujourd’hui";
 "Log in new account…" = "Connecter un nouveau compte…";
 "Add" = "Ajouter";
 "Last 14 days" = "14 derniers jours";
@@ -232,7 +227,6 @@
 "Re-login" = "Se reconnecter";
 "Cost is computed from your local Claude Code session logs (jsonl files) under ~/.claude/projects/." = "Le coût est calculé à partir de vos journaux de session Claude Code locaux (fichiers jsonl) dans ~/.claude/projects/.";
 "Verified against ccusage %@ on %@ — %lld-day total matched to the cent." = "Vérifié avec ccusage %1$@ le %2$@ — le total sur %3$lld jours correspond au centime près.";
-"API-equivalent" = "Équivalent API";
 "7 days" = "7 jours";
 "30 days" = "30 jours";
 "Refreshing…" = "Actualisation…";
@@ -242,3 +236,5 @@
 "%@ resets in %@" = "%@ : réinitialisation dans %@";
 "%@: %@ · resets %@" = "%@ : %@ · réinitialisation dans %@";
 "%@: %@" = "%@ : %@";
+"Costs" = "Coûts";
+"Claude Code · This Mac · API-equivalent" = "Claude Code · Ce Mac · équivalent API";

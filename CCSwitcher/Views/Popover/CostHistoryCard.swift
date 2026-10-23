@@ -1,10 +1,9 @@
 import SwiftUI
-import Charts
 
-/// Last 14 days of API-equivalent cost as a bar chart with a hover callout.
+/// Last 14 days of API-equivalent cost as a compact vertical list (newest first):
+/// short date, a bar proportional to cost, and the amount.
 struct CostHistoryCard: View {
     @EnvironmentObject private var appState: AppState
-    @State private var hovered: DailyCost?
 
     private static let windowDays = 14
 
@@ -17,7 +16,7 @@ struct CostHistoryCard: View {
             guard let date = day.parsedDate, date >= windowStart else { return nil }
             return (day, date)
         }
-        .sorted { $0.date < $1.date }
+        .sorted { $0.date > $1.date }
     }
 
     private var todayString: String { TodayCostCard.dayFormatter.string(from: Date()) }
@@ -25,70 +24,56 @@ struct CostHistoryCard: View {
     var body: some View {
         let entries = days
         let total = entries.reduce(0) { $0 + $1.day.totalCost }
+        let maxCost = max(0.0001, entries.map { $0.day.totalCost }.max() ?? 0)
 
         GroupCard("Last 14 days", systemImage: "chart.bar", accessory: {
-            if let hovered {
-                Text(callout(hovered))
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.textSecondary)
-                    .lineLimit(1)
-            } else if !entries.isEmpty {
+            if !entries.isEmpty {
                 Text("Total \(TodayCostCard.formatCost(total))")
                     .font(.caption.weight(.medium).monospacedDigit())
                     .foregroundStyle(.textSecondary)
             }
         }) {
             if entries.isEmpty {
-                VStack(spacing: 6) {
-                    Image(systemName: "chart.bar")
-                        .foregroundStyle(.textSecondary)
-                    Text("No cost data yet")
-                        .font(.caption)
-                        .foregroundStyle(.textSecondary)
-                }
-                .frame(maxWidth: .infinity, minHeight: 90)
-                .redacted(reason: appState.isLoading ? .placeholder : [])
+                Text("No cost data yet")
+                    .font(.caption)
+                    .foregroundStyle(.textSecondary)
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .redacted(reason: appState.isLoading ? .placeholder : [])
             } else {
-                chart(entries)
+                VStack(spacing: 2) {
+                    ForEach(entries, id: \.day.id) { entry in
+                        row(entry.day, date: entry.date, maxCost: maxCost)
+                    }
+                }
             }
         }
     }
 
-    private func chart(_ entries: [(day: DailyCost, date: Date)]) -> some View {
-        let end = Calendar.current.startOfDay(for: Date())
-        let middle = Calendar.current.date(byAdding: .day, value: -(Self.windowDays / 2), to: end) ?? end
-        return Chart(entries, id: \.day.id) { entry in
-            BarMark(
-                x: .value("Day", entry.date, unit: .day),
-                y: .value("Cost", entry.day.totalCost)
-            )
-            .foregroundStyle(entry.day.date == todayString ? Color.brand : Color.blue.opacity(0.6))
-            .cornerRadius(2)
-        }
-        .chartXScale(domain: windowStart...end.addingTimeInterval(86_400))
-        .chartXAxis {
-            AxisMarks(values: [windowStart, middle, end]) { _ in
-                AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), centered: true)
-            }
-        }
-        .chartYAxis(.hidden)
-        .chartOverlay { proxy in
+    private func row(_ day: DailyCost, date: Date, maxCost: Double) -> some View {
+        let isToday = day.date == todayString
+        return HStack(spacing: 6) {
+            Text(date.formatted(.dateTime.day().month(.defaultDigits)))
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.textSecondary)
+                .frame(width: 30, alignment: .leading)
             GeometryReader { geo in
-                Rectangle().fill(.clear).contentShape(Rectangle())
-                    .onContinuousHover { phase in
-                        switch phase {
-                        case .active(let location):
-                            guard let plot = proxy.plotFrame else { return }
-                            let originX = geo[plot].origin.x
-                            guard let date: Date = proxy.value(atX: location.x - originX) else { return }
-                            hovered = entries.first { Calendar.current.isDate($0.date, inSameDayAs: date) }?.day
-                        case .ended:
-                            hovered = nil
-                        }
-                    }
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(isToday ? Color.brand : Color.blue.opacity(0.6))
+                    .frame(width: max(2, geo.size.width * CGFloat(day.totalCost / maxCost)))
+                    .frame(maxHeight: .infinity, alignment: .leading)
             }
+            .frame(height: 8)
+            Text(Self.shortCost(day.totalCost))
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(isToday ? Color.primary : Color.textSecondary)
+                .frame(width: 48, alignment: .trailing)
         }
-        .frame(height: 90)
+        .frame(height: 15)
+        .help(callout(day))
+    }
+
+    private static func shortCost(_ cost: Double) -> String {
+        cost >= 1 ? String(format: "$%.2f", cost) : String(format: "$%.3f", cost)
     }
 
     private func callout(_ day: DailyCost) -> String {

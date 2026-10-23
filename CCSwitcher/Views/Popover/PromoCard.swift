@@ -3,21 +3,22 @@ import SwiftUI
 /// Double-usage campaign banner, shown only while the campaign is active.
 struct PromoCard: View {
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(systemName: "gift.fill")
                 .foregroundStyle(.brand)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Double Usage Active")
-                    .font(.callout.weight(.medium))
+                    .font(.caption.weight(.semibold))
                 Text(localOffPeakTimeString)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.textSecondary)
             }
 
             Spacer(minLength: 0)
         }
-        .padding(AppStyle.groupPadding)
+        .padding(.horizontal, AppStyle.groupPadding)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: AppStyle.groupCornerRadius)

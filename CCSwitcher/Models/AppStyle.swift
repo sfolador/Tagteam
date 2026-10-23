@@ -15,7 +15,7 @@ enum AppStyle {
     static let barCornerRadius: CGFloat = 3
 
     // Popover (two-column layout; see the redesign spec)
-    static let popoverWidth: CGFloat = 740
+    static let popoverWidth: CGFloat = 760
     static let popoverHeight: CGFloat = 640
     static let popoverOuterPadding: CGFloat = 14
     static let columnSpacing: CGFloat = 12
@@ -25,4 +25,6 @@ enum AppStyle {
     static let groupPadding: CGFloat = 14
     static let rowVerticalPadding: CGFloat = 8
     static let compactBarWidth: CGFloat = 56
+    /// Share of the content width given to the accounts column; the stats column gets the rest.
+    static let accountsColumnFraction: CGFloat = 0.6
 }

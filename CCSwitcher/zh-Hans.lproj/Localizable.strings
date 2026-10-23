@@ -30,14 +30,12 @@
 "Claude Code Account Switcher" = "Claude Code 账户切换工具";
 "Version %@" = "版本 %@";
 "Easily switch between Claude Code accounts and monitor usage." = "轻松切换 Claude Code 账户并监控用量。";
+"Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by [Xueshi Qiao](https://xueshi.dev)" = "基于 [Xueshi Qiao](https://xueshi.dev) 的 [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher)";
+"Codex support based on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese" = "Codex 支持基于 Lampese 的 [Codex Switcher](https://github.com/Lampese/codex-switcher)";
+"Portions © 2026 Xueshi Qiao" = "部分 © 2026 Xueshi Qiao";
 
 /* Usage Dashboard */
-"Turns" = "对话";
 "Active" = "活跃";
-"Lines" = "行数";
-"Messages you sent to Claude Code today" = "今日发送给 Claude Code 的消息数";
-"Estimated total time Claude worked for you today. Parallel sessions stack. Idle gaps >10 min excluded. This is an approximation based on message timestamps, not exact." = "预估 Claude 今日为你工作的总时间。并行会话会累加，超过 10 分钟的空闲间隔被排除。这是基于消息时间戳的近似值，不完全精确。";
-"Estimated lines of code written by Claude via Edit/Write tools" = "预估 Claude 通过 Edit/Write 工具编写的代码行数";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "预估 Claude Code 使用的 API 等效费用，仅供参考。";
 "Extra usage" = "额外用量";
 "On" = "开启";
@@ -212,9 +210,6 @@
 "Log in with browser" = "通过浏览器登录";
 "Add current login" = "添加当前登录";
 "Get started" = "开始使用";
-"Activity" = "活动";
-"Claude Code · This Mac" = "Claude Code · 这台 Mac";
-"No Claude Code activity yet today" = "今天还没有 Claude Code 活动";
 "Log in new account…" = "登录新账号…";
 "Add" = "添加";
 "Last 14 days" = "最近 14 天";
@@ -232,7 +227,6 @@
 "Re-login" = "重新登录";
 "Cost is computed from your local Claude Code session logs (jsonl files) under ~/.claude/projects/." = "费用根据本地 ~/.claude/projects/ 下的 Claude Code 会话日志（jsonl 文件）计算。";
 "Verified against ccusage %@ on %@ — %lld-day total matched to the cent." = "已于 %2$@ 对照 ccusage %1$@ 验证——%3$lld 天总额精确到分一致。";
-"API-equivalent" = "API 等值";
 "7 days" = "7 天";
 "30 days" = "30 天";
 "Refreshing…" = "正在刷新…";
@@ -242,3 +236,5 @@
 "%@ resets in %@" = "%@将在 %@后重置";
 "%@: %@ · resets %@" = "%@：%@ · %@后重置";
 "%@: %@" = "%@：%@";
+"Costs" = "费用";
+"Claude Code · This Mac · API-equivalent" = "Claude Code · 本机 · API 等效";
