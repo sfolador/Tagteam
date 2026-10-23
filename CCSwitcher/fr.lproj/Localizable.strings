@@ -262,9 +262,11 @@
 "This Codex login does not match the stored account." = "Cette connexion Codex ne correspond pas au compte enregistré.";
 "Could not stop the Codex app-server to switch accounts: %@" = "Impossible d’arrêter le serveur d’applications Codex pour changer de compte : %@";
 "Switched Codex account, but the Codex app-server could not be restarted: %@. Restart it with `codex app-server daemon restart`." = "Compte Codex changé, mais le serveur d’applications Codex n’a pas pu être redémarré : %@. Redémarrez-le avec `codex app-server daemon restart`.";
-"Restart the Codex app-server when switching" = "Redémarrer le serveur d’applications Codex lors du changement";
-"ChatGPT.app and Codex clients keep the login in memory through this background service. Restarting it interrupts Codex tasks that are running." = "ChatGPT.app et les clients Codex conservent la connexion en mémoire via ce service d’arrière-plan. Le redémarrer interrompt les tâches Codex en cours.";
+"Redémarrer les applis d’arrière-plan Codex lors du changement (serveur d’application et appli de bureau ChatGPT/Codex)" = "Redémarrer les applis d’arrière-plan Codex lors du changement (serveur d’application et appli de bureau ChatGPT/Codex)";
+"Elles gardent la connexion en mémoire et réécriraient le compte précédent dans auth.json. Le redémarrage interrompt les tâches Codex en cours." = "Elles gardent la connexion en mémoire et réécriraient le compte précédent dans auth.json. Le redémarrage interrompt les tâches Codex en cours.";
 "App-server" = "Serveur d’applications";
 "Running" = "En cours";
 "Not running" = "Arrêté";
-"Codex app-server running — it keeps the previous account until restarted" = "Serveur d’applications Codex actif — il garde le compte précédent jusqu’au redémarrage";
+"Serveur d’application Codex ou ChatGPT (Codex) en cours — ils gardent le compte précédent jusqu’au redémarrage" = "Serveur d’application Codex ou ChatGPT (Codex) en cours — ils gardent le compte précédent jusqu’au redémarrage";
+"Quit ChatGPT (Codex) to switch the Codex account — it would otherwise write the previous account back." = "Quittez ChatGPT (Codex) pour changer de compte Codex — sinon il réécrirait le compte précédent.";
+"Switched Codex account, but ChatGPT (Codex) could not be reopened: %@" = "Compte Codex changé, mais ChatGPT (Codex) n’a pas pu être rouvert : %@";

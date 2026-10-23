@@ -56,6 +56,7 @@ enum CodexServiceError: LocalizedError, Equatable {
     case rateLimited(retryAfter: TimeInterval?)
     case http(status: Int, body: String)
     case appServerStopFailed(String)
+    case codexAppStillRunning
     case notImplemented
 
     var errorDescription: String? {
@@ -72,6 +73,7 @@ enum CodexServiceError: LocalizedError, Equatable {
         case .rateLimited: String(localized: "Codex usage endpoint is rate limited.", bundle: L10n.bundle)
         case .http(let status, _): String(localized: "Codex usage request failed (HTTP \(status)).", bundle: L10n.bundle)
         case .appServerStopFailed(let detail): String(localized: "Could not stop the Codex app-server to switch accounts: \(detail)", bundle: L10n.bundle)
+        case .codexAppStillRunning: String(localized: "Quit ChatGPT (Codex) to switch the Codex account — it would otherwise write the previous account back.", bundle: L10n.bundle)
         case .notImplemented: String(localized: "Not implemented.", bundle: L10n.bundle)
         }
     }

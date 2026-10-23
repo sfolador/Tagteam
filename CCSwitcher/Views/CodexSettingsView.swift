@@ -125,9 +125,9 @@ struct CodexSettingsView: View {
                     case .none: ProgressView().controlSize(.small)
                     }
                 }
-                Toggle("Restart the Codex app-server when switching", isOn: $restartAppServer)
+                Toggle("Restart Codex background apps when switching (app-server and ChatGPT/Codex desktop app)", isOn: $restartAppServer)
             } footer: {
-                Text("ChatGPT.app and Codex clients keep the login in memory through this background service. Restarting it interrupts Codex tasks that are running.")
+                Text("They keep the login in memory and would write the previous account back to auth.json. Restarting interrupts running Codex tasks.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 private let log = FileLog("CodexService")
@@ -39,8 +40,11 @@ actor CodexService {
     /// account was removed must not write its backup back.
     private var removedAccountIds: Set<UUID> = []
 
-    init(store: CodexCredentialStore = .shared, binaryPathOverride: String? = nil) {
+    private let desktop: any CodexDesktopControlling
+
+    init(store: CodexCredentialStore = .shared, binaryPathOverride: String? = nil, desktop: any CodexDesktopControlling = SystemCodexDesktop()) {
         self.store = store
+        self.desktop = desktop
         self.cachedBinaryPath = binaryPathOverride
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20
@@ -464,10 +468,10 @@ actor CodexService {
     /// Number of running `codex` processes. A running session can rewrite
     /// auth.json with its own refreshed tokens and undo a switch.
     ///
-    /// Counts interactive CLI sessions (a tty) and the Codex desktop app; like
-    /// codex-switcher it ignores `codex app-server` helpers, headless
-    /// processes and codex-switcher itself. The shared app-server daemon is
-    /// reported separately by `isAppServerDaemonRunning()`.
+    /// Counts interactive CLI sessions (a tty); like codex-switcher it ignores
+    /// `codex app-server` helpers, headless processes and codex-switcher itself.
+    /// The shared app-server daemon and the Codex desktop app (with its embedded
+    /// server) are handled by the switch itself, so they are not counted.
     func runningCodexProcessCount() async -> Int {
         guard let result = await CapturedProcess().run(executable: "/bin/ps", arguments: ["-axo", "pid=,tty=,command="], timeout: 5) else {
             log.warning("[processCount] ps failed or timed out")
@@ -485,29 +489,40 @@ actor CodexService {
             let command = String(parts[2])
             let lower = command.lowercased()
             if lower.contains("codex-switcher") || lower.contains("codex switcher") || lower.contains("ccswitcher") { continue }
-            if lower.contains("app-server") { continue }
+            if lower.contains("app-server") || command.contains(Self.embeddedServerMarker) { continue }
 
             let first = command.split(separator: " ").first.map(String.init) ?? ""
             let isCLI = first == "codex" || first.hasSuffix("/codex")
-            let isDesktop = command.contains("/Codex.app/Contents/MacOS/Codex") && !lower.contains("helper")
-            if isDesktop || (isCLI && tty != "??" && tty != "?") { count += 1 }
+            if isCLI && tty != "??" && tty != "?" { count += 1 }
         }
         return count
     }
 
     // MARK: - App-server daemon
 
-    /// Outcome of `switchAccountRestartingAppServer`. The switch itself
-    /// succeeded in every case; this only reports what happened to the daemon.
+    /// What happened to the daemon during `switchAccountRestartingAppServer`.
     enum AppServerRestart: Equatable, Sendable {
         case notRunning
         case restarted
         case restartFailed(String)
     }
 
+    /// Outcome of `switchAccountRestartingAppServer`. The switch itself
+    /// succeeded in every case; this reports what happened to the background apps.
+    struct SwitchOutcome: Equatable, Sendable {
+        var daemon: AppServerRestart = .notRunning
+        /// The Codex desktop app was running, was quit and was opened again.
+        var appsReopened = false
+        /// Short detail when the desktop app could not be opened again.
+        var reopenFailed: String?
+    }
+
     private static let daemonStopTimeout: TimeInterval = 15
     private static let daemonStartTimeout: TimeInterval = 30
     private static let daemonExitWait: TimeInterval = 10
+    private static let desktopQuitTimeout: TimeInterval = 15
+    /// The Codex desktop app runs its own app-server out of its bundle.
+    fileprivate static let embeddedServerMarker = "/Contents/Resources/codex-cli/"
 
     private nonisolated var daemonPidFileURL: URL {
         codexHome().appendingPathComponent("app-server-daemon/daemon.pid")
@@ -533,17 +548,68 @@ actor CodexService {
         await appServerDaemonPid() != nil
     }
 
-    /// Switch accounts while the app-server daemon is stopped, so it can flush
-    /// its tokens first (the switch re-captures them) and reloads auth.json when
-    /// started again. The daemon is only started again if it was running.
-    func switchAccountRestartingAppServer(to target: UUID, from current: UUID?) async throws(CodexServiceError) -> AppServerRestart {
-        guard let pid = await appServerDaemonPid() else {
-            try switchAccount(to: target, from: current)
-            return .notRunning
-        }
-        guard let binary = await codexBinaryPath() else { throw .notInstalled }
+    /// True while the Codex desktop app (ChatGPT.app / Codex.app) is running.
+    func isDesktopAppRunning() async -> Bool {
+        !(await desktop.runningApps()).isEmpty
+    }
 
-        log.info("[appServer] stopping daemon (pid \(pid)) before switching")
+    /// Switch accounts while every process that keeps the login in memory is
+    /// stopped, so they flush their tokens first (the switch re-captures them)
+    /// and reload auth.json when started again:
+    /// quit desktop app → stop daemon → switch → start daemon → reopen app.
+    /// Only what was running is started again. The desktop app is never
+    /// force-killed: if it stays up, nothing is touched and the switch throws.
+    func switchAccountRestartingAppServer(to target: UUID, from current: UUID?) async throws(CodexServiceError) -> SwitchOutcome {
+        let apps = await desktop.runningApps()
+        let daemonPid = await appServerDaemonPid()
+        guard apps.isEmpty == false || daemonPid != nil else {
+            try switchAccount(to: target, from: current)
+            return SwitchOutcome()
+        }
+        var binary: String?
+        if daemonPid != nil {
+            binary = await codexBinaryPath()
+            if binary == nil { throw .notInstalled }
+        }
+
+        if !apps.isEmpty {
+            log.info("[desktop] quitting \(apps.count) Codex desktop app(s) before switching")
+            await desktop.quit(apps)
+            guard await waitForDesktopExit(apps, timeout: Self.desktopQuitTimeout) else {
+                log.error("[desktop] Codex desktop app still running after \(Int(Self.desktopQuitTimeout)) s")
+                throw .codexAppStillRunning
+            }
+        }
+
+        var outcome = SwitchOutcome()
+        var daemonStopped = false
+        do {
+            if let pid = daemonPid, let binary {
+                log.info("[appServer] stopping daemon (pid \(pid)) before switching")
+                try await stopAppServer(binary: binary, pid: pid)
+                daemonStopped = true
+            }
+            try switchAccount(to: target, from: current)
+        } catch {
+            // Do not leave the user without a daemon or app because the switch failed.
+            if daemonStopped, let binary { _ = await startAppServer(binary: binary) }
+            _ = await reopen(apps)
+            throw error
+        }
+        if daemonStopped, let binary {
+            outcome.daemon = await startAppServer(binary: binary).map { .restartFailed($0) } ?? .restarted
+        }
+        if !apps.isEmpty {
+            if let failure = await reopen(apps) {
+                outcome.reopenFailed = failure
+            } else {
+                outcome.appsReopened = true
+            }
+        }
+        return outcome
+    }
+
+    private func stopAppServer(binary: String, pid: Int32) async throws(CodexServiceError) {
         guard let stop = await CapturedProcess().run(executable: binary, arguments: ["app-server", "daemon", "stop"], timeout: Self.daemonStopTimeout, discardOutput: true) else {
             log.error("[appServer] `daemon stop` failed to run or timed out")
             throw .appServerStopFailed("timed out")
@@ -556,18 +622,32 @@ actor CodexService {
             log.error("[appServer] daemon pid \(pid) still alive after stop")
             throw .appServerStopFailed("the process did not exit")
         }
+    }
 
-        do {
-            try switchAccount(to: target, from: current)
-        } catch {
-            // Do not leave the user without a daemon because the switch failed.
-            _ = await startAppServer(binary: binary)
-            throw error
+    /// Nil on success, else a short failure detail.
+    private func reopen(_ apps: [CodexDesktopApp]) async -> String? {
+        var failure: String?
+        for app in apps {
+            do {
+                try await desktop.reopen(app)
+                log.info("[desktop] reopened \(app.bundleURL.lastPathComponent)")
+            } catch {
+                log.error("[desktop] reopen failed: \(error.localizedDescription)")
+                failure = error.localizedDescription
+            }
         }
-        if let failure = await startAppServer(binary: binary) {
-            return .restartFailed(failure)
+        return failure
+    }
+
+    /// Waits for the quit apps and for the app-server embedded in their bundle.
+    private func waitForDesktopExit(_ apps: [CodexDesktopApp], timeout: TimeInterval) async -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while true {
+            let appsAlive = apps.contains { kill($0.pid, 0) == 0 }
+            if !appsAlive, !(await desktop.embeddedServerRunning()) { return true }
+            if Date() >= deadline { return false }
+            try? await Task.sleep(for: .milliseconds(200))
         }
-        return .restarted
     }
 
     /// Nil on success, else a short failure detail.
@@ -1066,5 +1146,61 @@ private final class LoginProcess: @unchecked Sendable {
         watchdog.cancel()
         pipe.fileHandleForReading.readabilityHandler = nil
         return status
+    }
+}
+
+// MARK: - Codex desktop app
+
+/// A running Codex desktop app (ChatGPT.app, bundle id `com.openai.codex`, or legacy Codex.app).
+struct CodexDesktopApp: Equatable, Sendable {
+    let pid: Int32
+    let bundleURL: URL
+}
+
+/// Desktop-app operations behind a seam so the switch sequence can be tested without touching the real app.
+protocol CodexDesktopControlling: Sendable {
+    func runningApps() async -> [CodexDesktopApp]
+    /// Politely asks the apps to quit (never a force-kill).
+    func quit(_ apps: [CodexDesktopApp]) async
+    /// Whether an app-server embedded in a desktop app bundle is still running.
+    func embeddedServerRunning() async -> Bool
+    func reopen(_ app: CodexDesktopApp) async throws
+}
+
+/// Production implementation on NSWorkspace; AppKit calls hop to the main actor.
+struct SystemCodexDesktop: CodexDesktopControlling {
+    func runningApps() async -> [CodexDesktopApp] {
+        await MainActor.run {
+            NSWorkspace.shared.runningApplications.compactMap { app in
+                guard let url = app.bundleURL, !app.isTerminated else { return nil }
+                guard app.bundleIdentifier == "com.openai.codex" || url.path.hasSuffix("/Codex.app") else { return nil }
+                return CodexDesktopApp(pid: app.processIdentifier, bundleURL: url)
+            }
+        }
+    }
+
+    func quit(_ apps: [CodexDesktopApp]) async {
+        let pids = apps.map(\.pid)
+        await MainActor.run {
+            for pid in pids { NSRunningApplication(processIdentifier: pid)?.terminate() }
+        }
+    }
+
+    func embeddedServerRunning() async -> Bool {
+        guard let result = await CapturedProcess().run(executable: "/bin/ps", arguments: ["-axo", "command="], timeout: 5) else { return false }
+        return String(decoding: result.output, as: UTF8.self).split(separator: "\n").contains {
+            $0.contains(CodexService.embeddedServerMarker) && $0.contains("app-server")
+        }
+    }
+
+    func reopen(_ app: CodexDesktopApp) async throws {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = false
+        _ = try await openApplication(at: app.bundleURL, configuration: configuration)
+    }
+
+    @MainActor
+    private func openApplication(at url: URL, configuration: NSWorkspace.OpenConfiguration) async throws -> NSRunningApplication {
+        try await NSWorkspace.shared.openApplication(at: url, configuration: configuration)
     }
 }

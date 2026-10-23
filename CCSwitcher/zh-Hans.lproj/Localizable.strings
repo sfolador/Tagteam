@@ -262,9 +262,11 @@
 "This Codex login does not match the stored account." = "此 Codex 登录与已保存的账户不匹配。";
 "Could not stop the Codex app-server to switch accounts: %@" = "无法停止 Codex app-server 以切换账号：%@";
 "Switched Codex account, but the Codex app-server could not be restarted: %@. Restart it with `codex app-server daemon restart`." = "已切换 Codex 账号，但无法重启 Codex app-server：%@。请使用 `codex app-server daemon restart` 重启。";
-"Restart the Codex app-server when switching" = "切换时重启 Codex app-server";
-"ChatGPT.app and Codex clients keep the login in memory through this background service. Restarting it interrupts Codex tasks that are running." = "ChatGPT.app 和 Codex 客户端通过此后台服务在内存中保留登录状态。重启会中断正在运行的 Codex 任务。";
+"切换时重启 Codex 后台应用 (app-server 和 ChatGPT/Codex 桌面应用)" = "切换时重启 Codex 后台应用 (app-server 和 ChatGPT/Codex 桌面应用)";
+"它们会在内存中保留登录状态，并将之前的账号写回 auth.json。重启会中断正在运行的 Codex 任务。" = "它们会在内存中保留登录状态，并将之前的账号写回 auth.json。重启会中断正在运行的 Codex 任务。";
 "App-server" = "App-server";
 "Running" = "运行中";
 "Not running" = "未运行";
-"Codex app-server running — it keeps the previous account until restarted" = "Codex app-server 正在运行 — 重启前仍使用之前的账号";
+"Codex app-server 或 ChatGPT (Codex) 正在运行 — 重启前它们仍使用之前的账号" = "Codex app-server 或 ChatGPT (Codex) 正在运行 — 重启前它们仍使用之前的账号";
+"Quit ChatGPT (Codex) to switch the Codex account — it would otherwise write the previous account back." = "请退出 ChatGPT (Codex) 以切换 Codex 账号 — 否则它会写回之前的账号。";
+"Switched Codex account, but ChatGPT (Codex) could not be reopened: %@" = "已切换 Codex 账号，但无法重新打开 ChatGPT (Codex)：%@";

@@ -55,6 +55,7 @@ final class AppState: ObservableObject {
     @Published var runningCodexSessions = 0
     /// The shared `codex app-server` daemon is up; it keeps the login it started with.
     @Published var codexAppServerRunning = false
+    @Published var codexDesktopRunning = false
 
     // MARK: - Services
 
@@ -588,7 +589,7 @@ final class AppState: ObservableObject {
         isLoading = true
         // Missing value = on: the daemon would otherwise keep the old account.
         let restartAppServer = UserDefaults.standard.object(forKey: "codexRestartAppServer") as? Bool ?? true
-        let restart: CodexService.AppServerRestart
+        let restart: CodexService.SwitchOutcome
         if restartAppServer {
             switch await codexResult(try await CodexService.shared.switchAccountRestartingAppServer(to: account.id, from: currentId)) {
             case .failure(let error):
@@ -609,11 +610,13 @@ final class AppState: ObservableObject {
                 log.error("[switchCodex] Switch failed: \(error.localizedDescription)")
                 return false
             case .success:
-                restart = .notRunning
+                restart = CodexService.SwitchOutcome()
             }
         }
-        if case .restartFailed(let detail) = restart {
+        if case .restartFailed(let detail) = restart.daemon {
             errorMessage = String(localized: "Switched Codex account, but the Codex app-server could not be restarted: \(detail). Restart it with `codex app-server daemon restart`.", bundle: L10n.bundle)
+        } else if let detail = restart.reopenFailed {
+            errorMessage = String(localized: "Switched Codex account, but ChatGPT (Codex) could not be reopened: \(detail)", bundle: L10n.bundle)
         }
 
         for i in accounts.indices where accounts[i].provider == .codex {
@@ -627,6 +630,7 @@ final class AppState: ObservableObject {
         recordLastActive(account)
         runningCodexSessions = await CodexService.shared.runningCodexProcessCount()
         codexAppServerRunning = await CodexService.shared.isAppServerDaemonRunning()
+        codexDesktopRunning = await CodexService.shared.isDesktopAppRunning()
 
         if refreshAfter {
             await refresh()
@@ -1281,6 +1285,7 @@ final class AppState: ObservableObject {
         codexAvailable = await service.codexBinaryPath() != nil
         runningCodexSessions = await service.runningCodexProcessCount()
         codexAppServerRunning = await service.isAppServerDaemonRunning()
+        codexDesktopRunning = await service.isDesktopAppRunning()
 
         let codexAccounts = accounts(for: .codex)
         guard !codexAccounts.isEmpty else { return }

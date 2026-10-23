@@ -92,11 +92,11 @@ struct ProviderCardsView: View {
                 .foregroundStyle(.textSecondary)
             }
 
-            if appState.codexAppServerRunning && !restartsAppServer {
+            if (appState.codexAppServerRunning || appState.codexDesktopRunning) && !restartsAppServer {
                 HStack(alignment: .top, spacing: 4) {
                     Image(systemName: "info.circle")
                         .font(.caption2)
-                    Text("Codex app-server running — it keeps the previous account until restarted")
+                    Text("Codex app-server or ChatGPT (Codex) running — they keep the previous account until restarted")
                         .font(.caption2)
                         .fixedSize(horizontal: false, vertical: true)
                 }

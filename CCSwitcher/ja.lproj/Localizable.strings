@@ -262,9 +262,11 @@
 "This Codex login does not match the stored account." = "この Codex ログインは保存済みのアカウントと一致しません。";
 "Could not stop the Codex app-server to switch accounts: %@" = "アカウントを切り替えるための Codex app-server を停止できませんでした: %@";
 "Switched Codex account, but the Codex app-server could not be restarted: %@. Restart it with `codex app-server daemon restart`." = "Codex アカウントを切り替えましたが、Codex app-server を再起動できませんでした: %@。`codex app-server daemon restart` で再起動してください。";
-"Restart the Codex app-server when switching" = "切り替え時に Codex app-server を再起動する";
-"ChatGPT.app and Codex clients keep the login in memory through this background service. Restarting it interrupts Codex tasks that are running." = "ChatGPT.app と Codex クライアントは、このバックグラウンドサービスを通じてログイン情報をメモリに保持します。再起動すると実行中の Codex タスクが中断されます。";
+"切り替え時に Codex のバックグラウンドアプリを再起動 (app-server と ChatGPT/Codex デスクトップアプリ)" = "切り替え時に Codex のバックグラウンドアプリを再起動 (app-server と ChatGPT/Codex デスクトップアプリ)";
+"これらはログイン情報をメモリに保持しており、以前のアカウントを auth.json に書き戻してしまいます。再起動すると実行中の Codex タスクが中断されます。" = "これらはログイン情報をメモリに保持しており、以前のアカウントを auth.json に書き戻してしまいます。再起動すると実行中の Codex タスクが中断されます。";
 "App-server" = "App-server";
 "Running" = "実行中";
 "Not running" = "停止中";
-"Codex app-server running — it keeps the previous account until restarted" = "Codex app-server が実行中です — 再起動するまで以前のアカウントを使い続けます";
+"Codex app-server または ChatGPT (Codex) が実行中 — 再起動するまで以前のアカウントを使い続けます" = "Codex app-server または ChatGPT (Codex) が実行中 — 再起動するまで以前のアカウントを使い続けます";
+"Quit ChatGPT (Codex) to switch the Codex account — it would otherwise write the previous account back." = "Codex アカウントを切り替えるには ChatGPT (Codex) を終了してください。そうしないと以前のアカウントが書き戻されます。";
+"Switched Codex account, but ChatGPT (Codex) could not be reopened: %@" = "Codex アカウントを切り替えましたが、ChatGPT (Codex) を再度開けませんでした: %@";
