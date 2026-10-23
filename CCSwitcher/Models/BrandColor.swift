@@ -50,13 +50,6 @@ extension Color {
     /// Standard card border.
     static let cardBorder = adaptive(light: Color.white.opacity(0.40), dark: Color.white.opacity(0.20))
 
-    // MARK: - Tab Bar
-
-    /// Tab bar background fill.
-    static let tabFill = adaptive(light: Color.white.opacity(0.15), dark: Color.black.opacity(0.21))
-    /// Tab bar border.
-    static let tabBorder = adaptive(light: Color.white.opacity(0.40), dark: Color.white.opacity(0.20))
-
     // MARK: - Text
 
     /// Primary text color for cards and tab selected state.
@@ -77,8 +70,6 @@ extension ShapeStyle where Self == Color {
     static var cardFill: Color { .cardFill }
     static var cardFillStrong: Color { .cardFillStrong }
     static var cardBorder: Color { .cardBorder }
-    static var tabFill: Color { .tabFill }
-    static var tabBorder: Color { .tabBorder }
     static var textPrimary: Color { .textPrimary }
     static var textSecondary: Color { .textSecondary }
     static var subtleBrand: Color { .subtleBrand }

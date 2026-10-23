@@ -148,7 +148,7 @@ struct CodexSettingsView: View {
             }
             Button("Cancel", role: .cancel) { pendingRemoval = nil }
         } message: { _ in
-            Text("The stored credentials for this account are deleted from CCSwitcher.")
+            Text("The stored credentials for this account are deleted from Tagteam.")
         }
     }
 }

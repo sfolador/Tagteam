@@ -13,19 +13,17 @@ options:
     - de
     - fr
 
-packages:
-  Sparkle:
-    url: https://github.com/sparkle-project/Sparkle
-    from: 2.9.0
-
 settings:
   base:
     SWIFT_VERSION: "6.0"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
-    ENABLE_HARDENED_RUNTIME: false
+    ENABLE_HARDENED_RUNTIME: true
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: 584KQTRF3B
+    DEVELOPMENT_TEAM: 37G925A9SS
     SWIFT_STRICT_CONCURRENCY: targeted
+    # Single source for the app group: expanded into both entitlements and into
+    # the `AppGroupID` Info.plist key that Shared/WidgetData.swift reads.
+    APP_GROUP_ID: 37G925A9SS.me.xueshi.ccswitcher
 
 targets:
   CCSwitcher:
@@ -39,23 +37,18 @@ targets:
       properties:
         LSUIElement: true
         CFBundleDisplayName: $(PRODUCT_NAME)
+        AppGroupID: $(APP_GROUP_ID)
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleURLTypes:
           - CFBundleURLName: me.xueshi.ccswitcher
             CFBundleURLSchemes:
               - ccswitcher
-        # Sparkle: feed URL points at the always-latest release's appcast asset.
-        # CI uploads `appcast.xml` to each release alongside the DMG.
-        SUFeedURL: https://github.com/XueshiQiao/CCSwitcher/releases/latest/download/appcast.xml
-        # Public EdDSA key. The matching private key is the `SPARKLE_EDDSA_KEY`
-        # GitHub secret used by CI to sign each DMG.
-        SUPublicEDKey: N9jOZ2Xyo63FdNvkDCRiMwXFnFglOqTdmx6nw7ZwTS4=
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: me.xueshi.ccswitcher
         CODE_SIGN_ENTITLEMENTS: CCSwitcher/Resources/CCSwitcher.entitlements
-        PRODUCT_NAME: CCSwitcher
+        PRODUCT_NAME: Tagteam
         MARKETING_VERSION: "1.12.0"
         CURRENT_PROJECT_VERSION: "66"
         COMBINE_HIDPI_IMAGES: true
@@ -65,12 +58,11 @@ targets:
       path: CCSwitcher/Resources/CCSwitcher.entitlements
       properties:
         com.apple.security.application-groups:
-          - 584KQTRF3B.me.xueshi.ccswitcher
+          - $(APP_GROUP_ID)
     dependencies:
       - target: CCSwitcherWidgetExtension
         embed: true
         codeSign: true
-      - package: Sparkle
 
   CCSwitcherWidgetExtension:
     type: extensionkit-extension
@@ -81,7 +73,8 @@ targets:
     info:
       path: CCSwitcherWidget/Info.plist
       properties:
-        CFBundleDisplayName: CCSwitcher Widget
+        CFBundleDisplayName: Tagteam Widget
+        AppGroupID: $(APP_GROUP_ID)
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         EXAppExtensionAttributes:
@@ -96,7 +89,7 @@ targets:
         SWIFT_VERSION: "6.0"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: 584KQTRF3B
+        DEVELOPMENT_TEAM: 37G925A9SS
         SWIFT_STRICT_CONCURRENCY: targeted
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks"
         SKIP_INSTALL: true
@@ -105,4 +98,4 @@ targets:
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.application-groups:
-          - 584KQTRF3B.me.xueshi.ccswitcher
+          - $(APP_GROUP_ID)

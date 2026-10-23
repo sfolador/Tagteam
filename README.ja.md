@@ -8,6 +8,8 @@
 
 # CCSwitcher
 
+> **名称変更:** この CCSwitcher のフォークは **Tagteam** に改名されました（リポジトリ、バンドル ID、キーチェーン項目名は変更なし）。自動アップデートは無効です。
+
 CCSwitcherは、開発者が複数のClaude Codeアカウントを**マルチアカウントワークフローを中断することなく**管理・切り替えできるように設計された、軽量なmacOSメニューバー専用アプリケーションです。ネイティブの `claude auth login` フローは破壊的です——切り替えるたびに前のアカウントの認証情報を消去し、ブラウザでのフル OAuth をもう一度強制します。CCSwitcher は各アカウントごとに認証情報のバックアップを保持し、切り替え時にキーチェーンエントリと `~/.claude.json` を原子的に入れ替えるため、すべてのアカウントがワンクリックで切り戻し可能なまま残ります。CCSwitcherはAPI使用状況も監視し、バックグラウンドでのトークン更新を適切に処理し、macOSメニューバーアプリにおける一般的な制限を回避します。
 
 ## 機能
@@ -16,7 +18,6 @@ CCSwitcherは、開発者が複数のClaude Codeアカウントを**マルチア
 - **マルチアカウント管理**: macOSメニューバーからワンクリックで、複数のClaude Codeアカウントを簡単に追加・切り替えできます。
 - **使用状況ダッシュボード**: Claude APIの使用制限（5時間セッションと週単位）をメニューバーのドロップダウンからリアルタイムで監視。当日のAPI相当コストとアクティビティ統計（ターン、アクティブ分、書き込まれた行数、モデル別内訳）も表示します。
 - **デスクトップウィジェット**: macOSネイティブのデスクトップウィジェットで、小・中・大の3サイズに対応。アカウントの使用状況、コスト、アクティビティ統計を表示します。一目で使用状況を把握できるサークルリングバリアントも含まれています。
-- **アプリ内自動更新**: [Sparkle 2.x](https://sparkle-project.org/) によって駆動。新しいバージョンはサイレントかつ原子的にインストール——DMGのドラッグもFinderダイアログも不要です。
 - **ダークモード**：ライトモードとダークモードに完全対応。システムの外観設定に合わせてカラーが自動的に切り替わります。
 - **多言語対応**：English、简体中文、日本語、Deutsch、Français の5言語に対応しています。
 - **プライバシー重視のUI**: スクリーンショットや画面収録時に、メールアドレスやアカウント名を自動的に難読化して個人情報を保護します。
@@ -105,7 +106,7 @@ Claude の OAuth アクセストークンは短い有効期間（約 8 時間）
 
 ### 6. Team-IDプレフィックス付きApp Group（「他のAppのデータにアクセス」プロンプトの回避）
 
-macOS 15 SequoiaはApp Groupコンテナのルールを密かに変更しました：Mac App Store以外、TestFlight以外で配布されるアプリで、App Group IDが開発者のTeam IDで始まらないものは、起動のたびにTCC「App管理」プロンプトをトリガーします（バイナリのcdhashを変える自動更新後にも再度トリガーされます）。これを避けるため、CCSwitcherのApp Group識別子は `584KQTRF3B.me.xueshi.ccswitcher` ——Team IDプレフィックス形式——です。これはprovisioning profileを持たないDeveloper-ID署名アプリに対してmacOSが自動承認します。詳細な調査は [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14) を参照してください。
+macOS 15 SequoiaはApp Groupコンテナのルールを密かに変更しました：Mac App Store以外、TestFlight以外で配布されるアプリで、App Group IDが開発者のTeam IDで始まらないものは、起動のたびにTCC「App管理」プロンプトをトリガーします（バイナリのcdhashを変える自動更新後にも再度トリガーされます）。これを避けるため、CCSwitcherのApp Group識別子は `37G925A9SS.me.xueshi.ccswitcher` ——Team IDプレフィックス形式——です。これはprovisioning profileを持たないDeveloper-ID署名アプリに対してmacOSが自動承認します。詳細な調査は [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14) を参照してください。
 
 ### 7. `LSUIElement`用のSwiftUI `Settings`ウィンドウライフサイクルキープアライブ
 

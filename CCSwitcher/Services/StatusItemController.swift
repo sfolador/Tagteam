@@ -74,11 +74,13 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
                     .environment(\.locale, locale)
             )
         )
-        if #available(macOS 13.0, *) {
-            popoverController.sizingOptions = [.preferredContentSize]
-        } else {
-            popoverController.preferredContentSize = NSSize(width: 360, height: 520)
-        }
+        // Fixed-size popover: the content size is set explicitly on every open
+        // (`popoverContentSize`), so the hosting controller must not derive it.
+        popoverController.sizingOptions = []
+        popoverController.preferredContentSize = NSSize(
+            width: AppStyle.popoverWidth,
+            height: AppStyle.popoverHeight
+        )
         popover.contentViewController = popoverController
         popover.delegate = self
         self.popover = popover
@@ -104,9 +106,21 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         if popover.isShown {
             popover.performClose(sender)
         } else {
+            popoverController?.preferredContentSize = popoverContentSize(for: sender)
             popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
+    }
+
+    /// Popover size, capped to the visible frame of the screen holding the status
+    /// item button (minus 24 pt), so it never runs off a small display.
+    private func popoverContentSize(for button: NSStatusBarButton) -> NSSize {
+        let visible = (button.window?.screen ?? NSScreen.main)?.visibleFrame.size
+        let margin: CGFloat = 24
+        return NSSize(
+            width: min(AppStyle.popoverWidth, (visible?.width ?? .greatestFiniteMagnitude) - margin),
+            height: min(AppStyle.popoverHeight, (visible?.height ?? .greatestFiniteMagnitude) - margin)
+        )
     }
 
     private func makeStripView(appState: AppState, config: MenuBarConfig, locale: Locale) -> AnyView {

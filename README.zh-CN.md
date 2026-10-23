@@ -8,6 +8,8 @@
 
 # CCSwitcher
 
+> **已更名：** 此 CCSwitcher 分支现名为 **Tagteam**（仓库、Bundle ID 和钥匙串项名称保持不变）。自动更新已禁用。
+
 CCSwitcher 是一款轻量级的纯 macOS 菜单栏应用程序，旨在帮助开发者管理和切换多个 Claude Code 账户**而不中断你的多账户工作流**。原生 `claude auth login` 每次切换都要走完整的浏览器 OAuth、丢掉前一个账户的凭据；CCSwitcher 为每个已添加的账户单独备份凭据，切换时原子性地替换钥匙串和 `~/.claude.json`，所有账户的凭据始终保留，随时一键切回。CCSwitcher 还能监控 API 使用情况，优雅地处理后台 token 刷新，并绕开 macOS 菜单栏应用的常见限制。
 
 ## 功能特性
@@ -16,7 +18,6 @@ CCSwitcher 是一款轻量级的纯 macOS 菜单栏应用程序，旨在帮助�
 - **多账户管理**：在 macOS 菜单栏中一键添加和切换不同的 Claude Code 账户。
 - **用量仪表盘**：直接在菜单栏下拉菜单中实时监控 Claude API 使用限额（5 小时会话窗口和每周窗口），并展示当日的 API 等价费用与活动统计（轮次、活跃分钟数、写入行数、模型分布）。
 - **桌面小组件**：原生 macOS 桌面小组件，支持小、中、大三种尺寸，展示账户用量、费用和活动统计。还包含环形变体，方便一目了然地监控使用情况。
-- **应用内自动更新**：基于 [Sparkle 2.x](https://sparkle-project.org/)。新版本静默原子安装——无需拖拽 DMG，无需 Finder 对话框。
 - **深色模式**：完整支持亮色和深色模式，自适应颜色随系统外观自动切换。
 - **国际化**：支持 English、简体中文、日本語、Deutsch 和 Français 五种语言。
 - **隐私保护界面**：在截图或屏幕录制中自动模糊处理邮箱地址和账户名称，保护您的身份信息。
@@ -105,7 +106,7 @@ Claude 的 OAuth access token 生命周期较短（通常约 8 小时），刷�
 
 ### 6. Team-ID 前缀的 App Group（避免"访问其他 App 数据"提示）
 
-macOS 15 Sequoia 悄悄改了 App Group 容器的规则：任何非 Mac App Store、非 TestFlight 的应用，如果它的 App Group ID 不以开发者 Team ID 开头，每次启动都会触发 TCC「应用管理」提示（并在每次改变二进制 cdhash 的自动更新后再次触发）。为避免这一点，CCSwitcher 的 App Group 标识符是 `584KQTRF3B.me.xueshi.ccswitcher`——Team ID 前缀形式，对没有 provisioning profile 的 Developer-ID 签名应用，macOS 会自动授权。完整调查见 [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14)。
+macOS 15 Sequoia 悄悄改了 App Group 容器的规则：任何非 Mac App Store、非 TestFlight 的应用，如果它的 App Group ID 不以开发者 Team ID 开头，每次启动都会触发 TCC「应用管理」提示（并在每次改变二进制 cdhash 的自动更新后再次触发）。为避免这一点，CCSwitcher 的 App Group 标识符是 `37G925A9SS.me.xueshi.ccswitcher`——Team ID 前缀形式，对没有 provisioning profile 的 Developer-ID 签名应用，macOS 会自动授权。完整调查见 [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14)。
 
 ### 7. SwiftUI `Settings` 窗口生命周期保活（适用于 `LSUIElement`）
 

@@ -31,11 +31,15 @@ struct WidgetData: Codable {
     // Management on `group.<bundle-id>` style identifiers; the
     // `<TEAMID>.<bundle-id>` form is auto-authorized for Developer-ID-signed
     // apps without a provisioning profile and avoids the prompt entirely.
-    private static let appGroupID = "584KQTRF3B.me.xueshi.ccswitcher"
+    /// Read from the `AppGroupID` Info.plist key, which project.yml fills from
+    /// the same `APP_GROUP_ID` build setting as the entitlements, so the two
+    /// cannot drift apart.
+    private static let appGroupID = Bundle.main.object(forInfoDictionaryKey: "AppGroupID") as? String
     private static let fileName = "widget-data.json"
 
     private static var sharedContainerURL: URL? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
+        guard let appGroupID else { return nil }
+        return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
     }
 
     /// Load from the shared App Group container.

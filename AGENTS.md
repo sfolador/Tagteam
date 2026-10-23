@@ -1,4 +1,6 @@
-# CCSwitcher Agent Guidelines
+# Tagteam Agent Guidelines
+
+(The app is named **Tagteam**; the Xcode target, scheme, source folders and bundle id keep the `CCSwitcher` name.)
 
 **Rules**:
 - `project.yml` is the ONLY source of truth. NEVER edit `.pbxproj` or `Info.plist` directly. Run `xcodegen generate` after changes.

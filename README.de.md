@@ -8,6 +8,8 @@
 
 # CCSwitcher
 
+> **Umbenannt:** Dieser Fork von CCSwitcher heißt jetzt **Tagteam** (Repository, Bundle-ID und Keychain-Namen bleiben unverändert). Automatische Updates sind deaktiviert.
+
 CCSwitcher ist eine leichtgewichtige, reine Menüleisten-Anwendung für macOS, die Entwicklern hilft, zwischen mehreren Claude Code Konten zu wechseln und diese zu verwalten – **ohne Ihren Multi-Account-Workflow zu unterbrechen**. Der native `claude auth login`-Ablauf ist destruktiv: jeder Wechsel löscht die Anmeldedaten des vorherigen Kontos und erzwingt einen weiteren vollständigen Browser-OAuth. CCSwitcher führt pro Konto ein eigenes Backup der Anmeldedaten, tauscht beim Wechsel den Keychain-Eintrag und `~/.claude.json` atomar aus, und alle Konten bleiben für einen Ein-Klick-Rückwechsel verfügbar. CCSwitcher überwacht außerdem die API-Nutzung, handhabt Token-Aktualisierungen elegant im Hintergrund und umgeht gängige Einschränkungen von macOS-Menüleisten-Apps.
 
 ## Funktionen
@@ -16,7 +18,6 @@ CCSwitcher ist eine leichtgewichtige, reine Menüleisten-Anwendung für macOS, d
 - **Multi-Account-Verwaltung**: Einfaches Hinzufügen und Wechseln zwischen verschiedenen Claude Code Konten mit einem einzigen Klick aus der macOS-Menüleiste.
 - **Nutzungs-Dashboard**: Echtzeit-Überwachung Ihrer Claude API-Nutzungslimits (5-Stunden-Sitzung und wöchentlich) direkt im Dropdown der Menüleiste, plus heutige API-äquivalente Kosten und Aktivitätsstatistiken (Runden, aktive Minuten, geschriebene Zeilen, Modellaufschlüsselung).
 - **Desktop-Widgets**: Native macOS Desktop-Widgets in kleiner, mittlerer und großer Größe, die Kontonutzung, Kosten und Aktivitätsstatistiken anzeigen. Enthält eine Ringdiagramm-Variante zur schnellen Nutzungsübersicht.
-- **In-App-Auto-Update**: Powered by [Sparkle 2.x](https://sparkle-project.org/). Neue Versionen installieren sich still und atomar – kein DMG-Ziehen, keine Finder-Dialoge.
 - **Dunkelmodus**: Vollständige Unterstützung für hellen und dunklen Modus mit adaptiven Farben, die sich automatisch an das Systemerscheinungsbild anpassen.
 - **Internationalisierung**: Verfügbar in English, 简体中文 (Chinesisch), 日本語 (Japanisch), Deutsch und Français (Französisch).
 - **Datenschutzorientierte Oberfläche**: Verschleiert automatisch E-Mail-Adressen und Kontonamen in Screenshots oder Bildschirmaufnahmen, um Ihre Identität zu schützen.
@@ -105,7 +106,7 @@ Das Auslesen des macOS Keychain über das native `Security.framework` (`SecItemC
 
 ### 6. Team-ID-präfixierte App Group (Kein „Auf Daten anderer Apps zugreifen"-Dialog)
 
-macOS 15 Sequoia änderte still die Regeln für App-Group-Container: jede nicht-Mac-App-Store-, nicht-TestFlight-App, deren App-Group-ID NICHT mit der Entwickler-Team-ID beginnt, löst bei jedem Start einen TCC „App-Verwaltung"-Dialog aus (und erneut nach jedem Auto-Update, das den cdhash der Binary ändert). Um das zu vermeiden, ist CCSwitchers App Group als `584KQTRF3B.me.xueshi.ccswitcher` identifiziert — die Team-ID-präfixierte Form, die macOS für Developer-ID-signierte Apps ohne Provisioning-Profile automatisch autorisiert. Siehe [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14) für die vollständige Untersuchung.
+macOS 15 Sequoia änderte still die Regeln für App-Group-Container: jede nicht-Mac-App-Store-, nicht-TestFlight-App, deren App-Group-ID NICHT mit der Entwickler-Team-ID beginnt, löst bei jedem Start einen TCC „App-Verwaltung"-Dialog aus (und erneut nach jedem Auto-Update, das den cdhash der Binary ändert). Um das zu vermeiden, ist CCSwitchers App Group als `37G925A9SS.me.xueshi.ccswitcher` identifiziert — die Team-ID-präfixierte Form, die macOS für Developer-ID-signierte Apps ohne Provisioning-Profile automatisch autorisiert. Siehe [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14) für die vollständige Untersuchung.
 
 ### 7. SwiftUI `Settings`-Fenster Lifecycle-Keepalive für `LSUIElement`
 

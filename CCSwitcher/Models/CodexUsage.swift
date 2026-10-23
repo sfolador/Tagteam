@@ -66,7 +66,7 @@ enum CodexServiceError: LocalizedError, Equatable {
         case .noStoredCredentials: String(localized: "No stored Codex credentials for this account.", bundle: L10n.bundle)
         case .storeUnavailable: String(localized: "Credential storage is temporarily unavailable.", bundle: L10n.bundle)
         case .invalidAuthFile(let detail): String(localized: "Invalid Codex auth.json: \(detail)", bundle: L10n.bundle)
-        case .unmanagedLogin: String(localized: "Codex is logged in with an account CCSwitcher does not manage. Import it first (Settings → Codex) so switching does not discard it.", bundle: L10n.bundle)
+        case .unmanagedLogin: String(localized: "Codex is logged in with an account Tagteam does not manage. Import it first (Settings → Codex) so switching does not discard it.", bundle: L10n.bundle)
         case .loginFailed(let detail): String(localized: "Codex login failed: \(detail)", bundle: L10n.bundle)
         case .loginCancelled: String(localized: "Codex login was cancelled.", bundle: L10n.bundle)
         case .unauthorized: String(localized: "Codex session expired. Log in again.", bundle: L10n.bundle)

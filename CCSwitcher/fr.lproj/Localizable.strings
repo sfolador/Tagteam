@@ -1,11 +1,8 @@
 /* Navigation - Tab Bar */
-"Usage" = "Utilisation";
-"Costs" = "Coûts";
 "Accounts" = "Comptes";
 
 /* Main Menu */
 "Double Usage Active" = "Double utilisation active";
-"No account connected" = "Aucun compte connecté";
 "Refresh" = "Actualiser";
 "Settings" = "Réglages";
 "Quit" = "Quitter";
@@ -21,7 +18,6 @@
 "1 minute" = "1 minute";
 "5 minutes" = "5 minutes";
 "10 minutes" = "10 minutes";
-"Show account name in menu bar" = "Afficher le nom du compte dans la barre des menus";
 "Show head icon in menu bar" = "Afficher l'icône de tête dans la barre des menus";
 "Show full email address" = "Afficher l'adresse e-mail complète";
 "Launch at login" = "Lancer au démarrage";
@@ -33,62 +29,28 @@
 /* Settings - About */
 "Claude Code Account Switcher" = "Gestionnaire de comptes Claude Code";
 "Version %@" = "Version %@";
-"Checking..." = "Vérification...";
-"Check for Updates" = "Vérifier les mises à jour";
 "Easily switch between Claude Code accounts and monitor usage." = "Basculez facilement entre les comptes Claude Code et surveillez l'utilisation.";
 
 /* Usage Dashboard */
-"Loading usage data..." = "Chargement des données d'utilisation...";
-"Usage data unavailable" = "Données d'utilisation indisponibles";
-"Today's API-Equivalent Cost" = "Coût équivalent API du jour";
-"Today's Activity" = "Activité du jour";
 "Turns" = "Tours";
 "Active" = "Actif";
 "Lines" = "Lignes";
 "Messages you sent to Claude Code today" = "Messages envoyés à Claude Code aujourd'hui";
 "Estimated total time Claude worked for you today. Parallel sessions stack. Idle gaps >10 min excluded. This is an approximation based on message timestamps, not exact." = "Temps total estimé pendant lequel Claude a travaillé pour vous aujourd'hui. Les sessions parallèles sont cumulées. Les pauses de plus de 10 min sont exclues. Approximation basée sur les horodatages des messages.";
 "Estimated lines of code written by Claude via Edit/Write tools" = "Lignes de code estimées écrites par Claude via les outils Edit/Write";
-"Claude Opus 4 — most capable model, best for complex tasks" = "Claude Opus 4 — modèle le plus performant, idéal pour les tâches complexes";
-"Claude Sonnet 4 — balanced speed and capability" = "Claude Sonnet 4 — équilibre entre vitesse et capacité";
-"Claude Haiku 4 — fastest model, best for simple tasks" = "Claude Haiku 4 — modèle le plus rapide, idéal pour les tâches simples";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "Coût équivalent API estimé de votre utilisation de Claude Code, à titre indicatif uniquement.";
-"Token expired. Switch to this account in Claude Code to refresh." = "Jeton expiré. Basculez vers ce compte dans Claude Code pour actualiser.";
-"Session" = "Session";
-"Weekly" = "Hebdomadaire";
 "Extra usage" = "Utilisation supplémentaire";
 "On" = "Activé";
 "Off" = "Désactivé";
-"Resets in %@" = "Réinitialisation dans %@";
 
 /* Cost Detail */
 "Today" = "Aujourd'hui";
-"Last 7 Days" = "7 derniers jours";
-"Last 30 Days" = "30 derniers jours";
-"Daily History" = "Historique quotidien";
-"Total: %@" = "Total : %@";
-"No cost data available" = "Aucune donnée de coût disponible";
-"How We Calculate" = "Méthode de calcul";
-"Cost is computed from Claude Code session logs (~/.claude/projects/), deduplicated by request ID." = "Le coût est calculé à partir des journaux de session Claude Code (~/.claude/projects/), dédupliqué par ID de requête.";
-"Cache write = 5-min tier (1.25× base input). Cache read = 0.1× base input." = "Écriture cache = palier 5 min (1,25× entrée de base). Lecture cache = 0,1× entrée de base.";
-"Official Pricing — platform.claude.com" = "Tarifs officiels — platform.claude.com";
-"Model" = "Modèle";
-"Input" = "Entrée";
-"Output" = "Sortie";
-"Cache W" = "Cache É";
-"Cache R" = "Cache L";
-"%lld sessions" = "%lld sessions";
-"%@ tokens" = "%@ jetons";
 
 /* Account Switcher */
-"No Accounts" = "Aucun compte";
-"Add your current Claude Code account to get started." = "Ajoutez votre compte Claude Code actuel pour commencer.";
 "Custom label" = "Libellé personnalisé";
 "Edit label" = "Modifier le libellé";
 "Switch" = "Basculer";
-"Login New Account" = "Connecter un nouveau compte";
-"Add Current Account" = "Ajouter le compte actuel";
 "Waiting for browser login..." = "En attente de la connexion navigateur...";
-"Complete the login in your browser, then return here." = "Terminez la connexion dans votre navigateur, puis revenez ici.";
 "This will capture the currently logged-in Claude Code account." = "Ceci va capturer le compte Claude Code actuellement connecté.";
 "Cancel" = "Annuler";
 "Add Account" = "Ajouter un compte";
@@ -96,30 +58,6 @@
 "Remove account" = "Supprimer le compte";
 
 /* Usage Chart */
-"No Data" = "Aucune donnée";
-"Usage data will appear here" = "Les données d'utilisation apparaîtront ici";
-
-/* Update Checker */
-"A new version of CCSwitcher is available!" = "Une nouvelle version de CCSwitcher est disponible !";
-"Version %@ is available. You are currently running version %@.\n\nWould you like to download it now?" = "La version %1$@ est disponible. Vous utilisez actuellement la version %2$@.\n\nVoulez-vous la télécharger maintenant ?";
-"Download & Install" = "Télécharger et installer";
-"View Release" = "Voir la version";
-"Later" = "Plus tard";
-"Update Check Failed" = "Échec de la vérification";
-"Could not connect to GitHub. Please try again later." = "Impossible de se connecter à GitHub. Veuillez réessayer plus tard.";
-"Rate Limit Exceeded" = "Limite de requêtes dépassée";
-"GitHub API rate limit exceeded. Please try again later." = "Limite de requêtes de l'API GitHub dépassée. Veuillez réessayer plus tard.";
-"Up to date" = "À jour";
-"No releases found on GitHub." = "Aucune version trouvée sur GitHub.";
-"GitHub API returned status code %lld." = "L'API GitHub a retourné le code d'état %lld.";
-"You are running the latest version of CCSwitcher (%@)." = "Vous utilisez la dernière version de CCSwitcher (%@).";
-"Downloading CCSwitcher.dmg..." = "Téléchargement de CCSwitcher.dmg...";
-"Downloading Update" = "Téléchargement de la mise à jour";
-"Download Complete" = "Téléchargement terminé";
-"The update has been downloaded and opened. Please drag the new CCSwitcher to your Applications folder to replace the old one.\n\nDo you want to quit the current app now?" = "La mise à jour a été téléchargée et ouverte. Veuillez glisser le nouveau CCSwitcher dans votre dossier Applications pour remplacer l'ancien.\n\nVoulez-vous quitter l'application maintenant ?";
-"Quit CCSwitcher" = "Quitter CCSwitcher";
-"Download Failed" = "Échec du téléchargement";
-"OK" = "OK";
 
 /* AppState Errors */
 "Claude CLI not found" = "Claude CLI introuvable";
@@ -134,7 +72,6 @@
 "Claude CLI is authenticating via %@ instead of a stored claude.ai login, so it reports no account. Unset ANTHROPIC_AUTH_TOKEN / CLAUDE_CODE_OAUTH_TOKEN / ANTHROPIC_PROFILE and remove any apiKeyHelper, then try again." = "Claude CLI s'authentifie via %@ au lieu d'une connexion claude.ai enregistrée et ne signale donc aucun compte. Supprimez ANTHROPIC_AUTH_TOKEN / CLAUDE_CODE_OAUTH_TOKEN / ANTHROPIC_PROFILE ainsi que tout apiKeyHelper, puis réessayez.";
 "Switched to %@, but the Claude CLI is authenticating via %@ instead of the stored login, so it will not use this account." = "Basculé vers %1$@, mais Claude CLI s'authentifie via %2$@ au lieu de la connexion enregistrée et n'utilisera donc pas ce compte.";
 "Token expired. Switch to refresh." = "Jeton expiré. Basculez pour actualiser.";
-"Token expired. Switch to this account to refresh." = "Jeton expiré. Basculez vers ce compte pour actualiser.";
 "API Rate Limited. Try again later." = "Limite de l'API atteinte. Réessayez plus tard.";
 "Could not fetch usage: %@" = "Impossible de récupérer l'utilisation : %@";
 
@@ -143,7 +80,6 @@
 "Double limits: 2 PM - 8 AM ET & Weekends" = "Limites doublées : 14h - 8h ET & week-ends";
 
 /* Menu Bar */
-"Menu bar" = "Barre de menus";
 "Menu bar modules" = "Modules de la barre de menus";
 "Drag to reorder, toggle to enable. Disabled modules sit at the bottom." = "Glissez pour réorganiser, basculez pour activer. Les modules désactivés sont en bas.";
 "Preview" = "Aperçu";
@@ -165,7 +101,6 @@
 "Session — usage vs time (5h)" = "Session — usage vs temps (5 h)";
 "Weekly — usage vs time (7d)" = "Hebdomadaire — usage vs temps (7 j)";
 "The vertical line marks time elapsed in the window; fill past it means you're using faster than the clock." = "La ligne verticale indique le temps écoulé ; remplissage au-delà = consommation plus rapide que l'horloge.";
-"Claude Fable 5 — most powerful model, the new flagship tier" = "Claude Fable 5 — le modèle le plus puissant, le nouveau niveau phare";
 
 /* Auto-switch & rate-limit resilience */
 "Waiting for usage data..." = "En attente des données d'utilisation...";
@@ -174,7 +109,7 @@
 "Auto-switch" = "Changement automatique";
 "Switch account before hitting the limit" = "Changer de compte avant d'atteindre la limite";
 "Switch at" = "Changer à";
-"When the active account's 5-hour or weekly usage reaches this level, CCSwitcher switches to the account with the most quota left. Checked on every refresh; a 5-minute cooldown prevents rapid flip-flopping." = "Lorsque l'utilisation sur 5 heures ou hebdomadaire du compte actif atteint ce niveau, CCSwitcher bascule vers le compte disposant du plus de quota restant. Vérifié à chaque actualisation ; un délai de 5 minutes évite les allers-retours rapides.";
+"When the active account's 5-hour or weekly usage reaches this level, Tagteam switches to the account with the most quota left. Checked on every refresh; a 5-minute cooldown prevents rapid flip-flopping." = "Lorsque l'utilisation sur 5 heures ou hebdomadaire du compte actif atteint ce niveau, Tagteam bascule vers le compte disposant du plus de quota restant. Vérifié à chaque actualisation ; un délai de 5 minutes évite les allers-retours rapides.";
 "Accounts used by auto-switch" = "Comptes utilisés par la bascule automatique";
 "Excluded accounts are never switched to automatically, and auto-switch stays off while one of them is active." = "Les comptes exclus ne sont jamais sélectionnés automatiquement, et la bascule automatique reste inactive tant que l'un d'eux est actif.";
 "Updated %@ ago" = "Mis à jour il y a %@";
@@ -203,7 +138,6 @@
 "Activating makes one account per provider live: the current one if it is a member, otherwise the last one used in this profile, otherwise the first member below." = "L'activation rend actif un compte par fournisseur : l'actuel s'il en fait partie, sinon le dernier utilisé dans ce profil, sinon le premier membre ci-dessous.";
 "No accounts yet" = "Aucun compte pour le moment";
 "· %@" = "· %@";
-"No accounts in this scope" = "Aucun compte dans ce périmètre";
 "Include in auto-switch" = "Inclure dans le changement automatique";
 "Exclude from auto-switch" = "Exclure du changement automatique";
 "could not switch" = "changement impossible";
@@ -226,7 +160,7 @@
 "Add Codex account" = "Ajouter un compte Codex";
 "Remove" = "Retirer";
 "Remove Codex account?" = "Retirer le compte Codex ?";
-"The stored credentials for this account are deleted from CCSwitcher." = "Les identifiants enregistrés pour ce compte sont supprimés de CCSwitcher.";
+"The stored credentials for this account are deleted from Tagteam." = "Les identifiants enregistrés pour ce compte sont supprimés de Tagteam.";
 "Switching accounts rewrites ~/.codex/auth.json. Running Codex sessions keep the previous account until they are restarted." = "Le changement de compte réécrit ~/.codex/auth.json. Les sessions Codex en cours gardent l'ancien compte jusqu'à leur redémarrage.";
 "%lld Codex session(s) running now" = "%lld session(s) Codex en cours";
 "%lld Codex sessions running — restart them to use the switched account" = "%lld sessions Codex en cours — redémarrez-les pour utiliser le compte activé";
@@ -238,7 +172,7 @@
 "Waiting for the Codex CLI to refresh its session" = "En attente que la CLI Codex renouvelle sa session";
 "Open Codex settings" = "Ouvrir les réglages Codex";
 "Not in this profile" = "Pas dans ce profil";
-"Remove this Codex account? Its stored login is deleted from CCSwitcher." = "Supprimer ce compte Codex ? Sa connexion enregistrée est supprimée de CCSwitcher.";
+"Remove this Codex account? Its stored login is deleted from Tagteam." = "Supprimer ce compte Codex ? Sa connexion enregistrée est supprimée de Tagteam.";
 "Personal" = "Personnel";
 "Work" = "Travail";
 "Profile %lld" = "Profil %lld";
@@ -252,7 +186,7 @@
 "No stored Codex credentials for this account." = "Aucun identifiant Codex enregistré pour ce compte.";
 "Credential storage is temporarily unavailable." = "Le stockage des identifiants est temporairement indisponible.";
 "Invalid Codex auth.json: %@" = "auth.json Codex invalide : %@";
-"Codex is logged in with an account CCSwitcher does not manage. Import it first (Settings → Codex) so switching does not discard it." = "Codex est connecté avec un compte que CCSwitcher ne gère pas. Importez-le d'abord (Réglages → Codex) pour qu'il ne soit pas perdu lors du changement.";
+"Codex is logged in with an account Tagteam does not manage. Import it first (Settings → Codex) so switching does not discard it." = "Codex est connecté avec un compte que Tagteam ne gère pas. Importez-le d'abord (Réglages → Codex) pour qu'il ne soit pas perdu lors du changement.";
 "Codex login failed: %@" = "Échec de la connexion à Codex : %@";
 "Codex login was cancelled." = "La connexion à Codex a été annulée.";
 "Codex session expired. Log in again." = "Session Codex expirée. Reconnectez-vous.";
@@ -262,11 +196,49 @@
 "This Codex login does not match the stored account." = "Cette connexion Codex ne correspond pas au compte enregistré.";
 "Could not stop the Codex app-server to switch accounts: %@" = "Impossible d’arrêter le serveur d’applications Codex pour changer de compte : %@";
 "Switched Codex account, but the Codex app-server could not be restarted: %@. Restart it with `codex app-server daemon restart`." = "Compte Codex changé, mais le serveur d’applications Codex n’a pas pu être redémarré : %@. Redémarrez-le avec `codex app-server daemon restart`.";
-"Redémarrer les applis d’arrière-plan Codex lors du changement (serveur d’application et appli de bureau ChatGPT/Codex)" = "Redémarrer les applis d’arrière-plan Codex lors du changement (serveur d’application et appli de bureau ChatGPT/Codex)";
-"Elles gardent la connexion en mémoire et réécriraient le compte précédent dans auth.json. Le redémarrage interrompt les tâches Codex en cours." = "Elles gardent la connexion en mémoire et réécriraient le compte précédent dans auth.json. Le redémarrage interrompt les tâches Codex en cours.";
+"Restart Codex background apps when switching (app-server and ChatGPT/Codex desktop app)" = "Redémarrer les applis d’arrière-plan Codex lors du changement (serveur d’application et appli de bureau ChatGPT/Codex)";
+"They keep the login in memory and would write the previous account back to auth.json. Restarting interrupts running Codex tasks." = "Elles gardent la connexion en mémoire et réécriraient le compte précédent dans auth.json. Le redémarrage interrompt les tâches Codex en cours.";
 "App-server" = "Serveur d’applications";
 "Running" = "En cours";
 "Not running" = "Arrêté";
-"Serveur d’application Codex ou ChatGPT (Codex) en cours — ils gardent le compte précédent jusqu’au redémarrage" = "Serveur d’application Codex ou ChatGPT (Codex) en cours — ils gardent le compte précédent jusqu’au redémarrage";
+"Codex app-server or ChatGPT (Codex) running — they keep the previous account until restarted" = "Serveur d’application Codex ou ChatGPT (Codex) en cours — ils gardent le compte précédent jusqu’au redémarrage";
 "Quit ChatGPT (Codex) to switch the Codex account — it would otherwise write the previous account back." = "Quittez ChatGPT (Codex) pour changer de compte Codex — sinon il réécrirait le compte précédent.";
 "Switched Codex account, but ChatGPT (Codex) could not be reopened: %@" = "Compte Codex changé, mais ChatGPT (Codex) n’a pas pu être rouvert : %@";
+
+/* Popover redesign */
+"Details…" = "Détails…";
+"Dismiss" = "Fermer";
+"Add your Claude Code account to get started." = "Ajoutez votre compte Claude Code pour commencer.";
+"Log in with browser" = "Se connecter via le navigateur";
+"Add current login" = "Ajouter la connexion actuelle";
+"Get started" = "Commencer";
+"Activity" = "Activité";
+"Claude Code · This Mac" = "Claude Code · ce Mac";
+"No Claude Code activity yet today" = "Aucune activité Claude Code aujourd’hui";
+"Log in new account…" = "Connecter un nouveau compte…";
+"Add" = "Ajouter";
+"Last 14 days" = "14 derniers jours";
+"Total %@" = "Total %@";
+"No cost data yet" = "Pas encore de données de coût";
+"Show less" = "Afficher moins";
+"Show %lld more" = "Afficher %lld de plus";
+"Add your Codex account" = "Ajoutez votre compte Codex";
+"Log in" = "Se connecter";
+"Import current" = "Importer l’actuel";
+"No Codex accounts in this profile" = "Aucun compte Codex dans ce profil";
+"No Claude Code accounts in this profile" = "Aucun compte Claude Code dans ce profil";
+"Log in…" = "Se connecter…";
+"Set up…" = "Configurer…";
+"Re-login" = "Se reconnecter";
+"Cost is computed from your local Claude Code session logs (jsonl files) under ~/.claude/projects/." = "Le coût est calculé à partir de vos journaux de session Claude Code locaux (fichiers jsonl) dans ~/.claude/projects/.";
+"Verified against ccusage %@ on %@ — %lld-day total matched to the cent." = "Vérifié avec ccusage %1$@ le %2$@ — le total sur %3$lld jours correspond au centime près.";
+"API-equivalent" = "Équivalent API";
+"7 days" = "7 jours";
+"30 days" = "30 jours";
+"Refreshing…" = "Actualisation…";
+"Updated %@" = "Mis à jour %@";
+"No Claude Code accounts yet" = "Aucun compte Claude Code pour le moment";
+"No Codex accounts yet" = "Aucun compte Codex pour le moment";
+"%@ resets in %@" = "%@ : réinitialisation dans %@";
+"%@: %@ · resets %@" = "%@ : %@ · réinitialisation dans %@";
+"%@: %@" = "%@ : %@";

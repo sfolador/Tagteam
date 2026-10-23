@@ -222,8 +222,19 @@ xcodegen generate
 xcodebuild -project CCSwitcher.xcodeproj -scheme CCSwitcher -configuration Debug build
 
 # Find the built app
-find ~/Library/Developer/Xcode/DerivedData -name "CCSwitcher.app" -type d 2>/dev/null | head -1
+find ~/Library/Developer/Xcode/DerivedData -name "Tagteam.app" -type d 2>/dev/null | head -1
 ```
+
+### Notarized release build
+
+`scripts/notarize.sh` builds Release unsigned, signs the widget extension and the app inside-out with the Developer ID (team `37G925A9SS`, hardened runtime, timestamp), zips, notarizes with the `notarytool` keychain profile `TunnelFlares`, staples and validates with `spctl`:
+
+```bash
+scripts/notarize.sh                 # output in build/notarize
+OUT=/some/dir scripts/notarize.sh   # or choose the output directory
+```
+
+It writes `$OUT/Tagteam.app` (stapled) and `$OUT/Tagteam.zip`. The product name and app group are read from the app target via `xcodebuild -showBuildSettings` (so from `project.yml`); the script also checks the signing identity and the notary profile before building, and prints `notarytool log` if notarization fails. The app group (`APP_GROUP_ID`) lives only in `project.yml`: it is expanded into both entitlements and the `AppGroupID` Info.plist key read by `Shared/WidgetData.swift`; the script expands it in the entitlements before signing. Automatic updates (Sparkle) were removed, so there are no nested frameworks to sign.
 
 ---
 

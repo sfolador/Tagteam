@@ -8,6 +8,8 @@
 
 # CCSwitcher
 
+> **Renommé :** ce fork de CCSwitcher s'appelle désormais **Tagteam** (dépôt, identifiant de bundle et noms des éléments du trousseau inchangés). Les mises à jour automatiques sont désactivées.
+
 CCSwitcher est une application macOS légère, fonctionnant exclusivement dans la barre de menus, conçue pour aider les développeurs à gérer et basculer entre plusieurs comptes Claude Code **sans interrompre votre workflow multi-comptes**. Le flux natif `claude auth login` est destructif : chaque changement efface les identifiants du compte précédent et force un nouveau cycle OAuth complet dans le navigateur. CCSwitcher conserve une sauvegarde par compte de tous les identifiants, échange atomiquement l'entrée du trousseau et `~/.claude.json` lors du changement, et tous les comptes restent disponibles pour un retour en un clic. Elle surveille également l'utilisation de l'API, gère gracieusement le rafraîchissement des tokens en arrière-plan et contourne les limitations courantes des applications de barre de menus macOS.
 
 ## Fonctionnalités
@@ -16,7 +18,6 @@ CCSwitcher est une application macOS légère, fonctionnant exclusivement dans l
 - **Gestion multi-comptes** : Ajoutez et basculez facilement entre différents comptes Claude Code en un seul clic depuis la barre de menus macOS.
 - **Tableau de bord d'utilisation** : Surveillance en temps réel de vos limites d'utilisation de l'API Claude (session 5 heures et hebdomadaire) directement dans le menu déroulant, ainsi que le coût équivalent API du jour et les statistiques d'activité (tours, minutes actives, lignes écrites, répartition par modèle).
 - **Widgets de bureau** : Widgets de bureau macOS natifs en tailles petite, moyenne et grande affichant l'utilisation du compte, les coûts et les statistiques d'activité. Inclut une variante en anneau circulaire pour une surveillance rapide de l'utilisation.
-- **Mise à jour automatique intégrée** : Propulsée par [Sparkle 2.x](https://sparkle-project.org/). Les nouvelles versions s'installent silencieusement et atomiquement — pas de glisser-déposer de DMG, pas de dialogues Finder.
 - **Mode sombre** : Prise en charge complète des modes clair et sombre avec des couleurs adaptatives qui suivent l'apparence de votre système.
 - **Internationalisation** : Disponible en English, 简体中文 (chinois), 日本語 (japonais), Deutsch (allemand) et Français.
 - **Interface axée sur la confidentialité** : Masque automatiquement les adresses e-mail et les noms de compte dans les captures d'écran ou les enregistrements d'écran pour protéger votre identité.
@@ -105,7 +106,7 @@ La lecture du trousseau macOS via le `Security.framework` natif (`SecItemCopyMat
 
 ### 6. App Group préfixé par le Team ID (Pas d'invite « Accéder aux données d'autres apps »)
 
-macOS 15 Sequoia a silencieusement changé les règles pour les conteneurs d'App Group : toute application non distribuée via le Mac App Store, non TestFlight, dont l'ID d'App Group ne commence PAS par le Team ID du développeur déclenche une invite TCC « Gestion d'app » à chaque lancement (et à nouveau après chaque mise à jour automatique qui change le cdhash du binaire). Pour éviter cela, l'App Group de CCSwitcher est identifié comme `584KQTRF3B.me.xueshi.ccswitcher` — la forme préfixée par le Team ID, que macOS autorise automatiquement pour les apps signées Developer-ID sans profil de provisioning. Voir [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14) pour l'enquête complète.
+macOS 15 Sequoia a silencieusement changé les règles pour les conteneurs d'App Group : toute application non distribuée via le Mac App Store, non TestFlight, dont l'ID d'App Group ne commence PAS par le Team ID du développeur déclenche une invite TCC « Gestion d'app » à chaque lancement (et à nouveau après chaque mise à jour automatique qui change le cdhash du binaire). Pour éviter cela, l'App Group de CCSwitcher est identifié comme `37G925A9SS.me.xueshi.ccswitcher` — la forme préfixée par le Team ID, que macOS autorise automatiquement pour les apps signées Developer-ID sans profil de provisioning. Voir [#14](https://github.com/XueshiQiao/CCSwitcher/issues/14) pour l'enquête complète.
 
 ### 7. Maintien en vie du cycle de vie de la fenêtre `Settings` SwiftUI pour `LSUIElement`
 

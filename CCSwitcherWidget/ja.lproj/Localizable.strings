@@ -1,10 +1,10 @@
 /* Widget Configuration */
 "Monitor your Claude Code account usage, costs, and activity." = "Claude Code アカウントの使用量、コスト、アクティビティを監視。";
-"CCSwitcher Rings" = "CCSwitcher リング";
+"Tagteam Rings" = "Tagteam リング";
 "Session and weekly usage shown as circular progress rings." = "セッションと週間使用量を円形プログレスリングで表示。";
 
 /* Widget Views */
-"Open CCSwitcher" = "CCSwitcher を開く";
+"Open Tagteam" = "Tagteam を開く";
 "to load data" = "データを読み込む";
 "today" = "今日";
 "No accounts" = "アカウントなし";

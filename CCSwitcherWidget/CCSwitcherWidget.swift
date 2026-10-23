@@ -94,7 +94,7 @@ struct CCSwitcherWidgetEntryView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(brandColor)
                 .widgetAccentable()
-            Text("Open CCSwitcher")
+            Text("Open Tagteam")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Text("to load data")
@@ -135,7 +135,7 @@ private struct SmallWidgetView: View {
                             .background(brandColor.opacity(0.15), in: Capsule())
                     }
                 } else {
-                    Text("CCSwitcher")
+                    Text("Tagteam")
                         .font(.caption.weight(.semibold))
                     Spacer()
                 }
@@ -386,7 +386,7 @@ private struct LargeWidgetView: View {
                     .font(.subheadline)
                     .foregroundStyle(brandColor)
                     .widgetAccentable()
-                Text("CCSwitcher")
+                Text("Tagteam")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Text(data.lastUpdated, style: .relative)
@@ -565,7 +565,7 @@ private struct CircleWidgetView: View {
                     .font(.caption)
                     .foregroundStyle(brandColor)
                     .widgetAccentable()
-                Text(activeAccount?.displayName ?? "CCSwitcher")
+                Text(activeAccount?.displayName ?? "Tagteam")
                     .font(.caption.weight(.semibold))
                     .lineLimit(1)
                 Spacer()
@@ -666,7 +666,7 @@ private struct CircleWidgetEntryView: View {
                 Image(systemName: "brain.head.profile")
                     .font(.system(size: 28))
                     .foregroundStyle(brandColor)
-                Text("Open CCSwitcher")
+                Text("Open Tagteam")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text("to load data")
@@ -699,7 +699,7 @@ struct CCSwitcherWidget: Widget {
             CCSwitcherWidgetEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
-        .configurationDisplayName("CCSwitcher")
+        .configurationDisplayName("Tagteam")
         .description("Monitor your Claude Code account usage, costs, and activity.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
@@ -713,7 +713,7 @@ struct CCSwitcherCircleWidget: Widget {
             CircleWidgetEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
-        .configurationDisplayName("CCSwitcher Rings")
+        .configurationDisplayName("Tagteam Rings")
         .description("Session and weekly usage shown as circular progress rings.")
         .supportedFamilies([.systemSmall])
     }

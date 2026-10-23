@@ -4,7 +4,6 @@ import ServiceManagement
 /// Settings window for configuring the app.
 struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var updateChecker: UpdateChecker
     @EnvironmentObject private var menuBarConfig: MenuBarConfig
     @AppStorage("refreshInterval") private var refreshInterval: Double = 300
     @AppStorage("showFullEmail") private var showFullEmail = false
@@ -100,7 +99,7 @@ struct SettingsView: View {
                         }
                         Slider(value: $autoSwitchThreshold, in: 50...99, step: 1)
                     }
-                    Text("When the active account's 5-hour or weekly usage reaches this level, CCSwitcher switches to the account with the most quota left. Checked on every refresh; a 5-minute cooldown prevents rapid flip-flopping.")
+                    Text("When the active account's 5-hour or weekly usage reaches this level, Tagteam switches to the account with the most quota left. Checked on every refresh; a 5-minute cooldown prevents rapid flip-flopping.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -204,7 +203,7 @@ struct SettingsView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.brand)
 
-            Text("CCSwitcher")
+            Text("Tagteam")
                 .font(.title2.weight(.bold))
 
             Text("Claude Code Account Switcher")
@@ -214,12 +213,6 @@ struct SettingsView: View {
             Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
-
-            Button(updateChecker.isChecking ? "Checking..." : "Check for Updates") {
-                updateChecker.checkForUpdates(manual: true)
-            }
-            .disabled(updateChecker.isChecking)
-            .padding(.top, 4)
 
             Spacer()
 
@@ -259,6 +252,10 @@ struct SettingsView: View {
                 try SMAppService.mainApp.register()
             } else {
                 try SMAppService.mainApp.unregister()
+            }
+            UserDefaults.standard.set(enable, forKey: launchAtLoginIntentKey)
+            if enable {
+                UserDefaults.standard.set(Bundle.main.bundlePath, forKey: launchAtLoginRegisteredPathKey)
             }
         } catch {
             launchAtLogin = !enable // revert on failure

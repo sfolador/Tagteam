@@ -103,7 +103,7 @@ final class AppState: ObservableObject {
     /// auto-switch verification, or vice versa — could interleave keychain and
     /// ~/.claude.json writes with the first.
     /// Shared by Claude and Codex switches (and read by AppState+Profiles).
-    var isSwitching = false
+    @Published var isSwitching = false
 
     // MARK: - Auto-switch
 
@@ -525,7 +525,7 @@ final class AppState: ObservableObject {
             targetBackup = backup
         case .missing:
             log.error("[switchTo] ABORT: no backup for target account")
-            errorMessage = String(localized: "No stored credentials for \(account.email). Use re-authenticate to fix.", bundle: L10n.bundle)
+            errorMessage = String(localized: "No stored credentials for \(account.displayEmail(obfuscated: !UserDefaults.standard.bool(forKey: "showFullEmail"))). Use re-authenticate to fix.", bundle: L10n.bundle)
             return false
         case .storeUnavailable:
             log.error("[switchTo] ABORT: backup store unreadable right now")
@@ -558,7 +558,7 @@ final class AppState: ObservableObject {
             }
             // `refresh()` clears errorMessage, so surface the warning afterwards.
             if let shadowedBy = outcome.shadowedBy {
-                errorMessage = String(localized: "Switched to \(account.email), but the Claude CLI is authenticating via \(shadowedBy) instead of the stored login, so it will not use this account.", bundle: L10n.bundle)
+                errorMessage = String(localized: "Switched to \(account.displayEmail(obfuscated: !UserDefaults.standard.bool(forKey: "showFullEmail"))), but the Claude CLI is authenticating via \(shadowedBy) instead of the stored login, so it will not use this account.", bundle: L10n.bundle)
             }
             log.info("[switchTo] ===== Switch completed =====")
             return true
@@ -833,7 +833,7 @@ final class AppState: ObservableObject {
             }
 
             guard email == account.email else {
-                errorMessage = String(localized: "Logged in as \(email), but expected \(account.email). Credentials not updated.", bundle: L10n.bundle)
+                errorMessage = String(localized: "Logged in as \(UserDefaults.standard.bool(forKey: "showFullEmail") ? email : email.obfuscatedEmail()), but expected \(account.displayEmail(obfuscated: !UserDefaults.standard.bool(forKey: "showFullEmail"))). Credentials not updated.", bundle: L10n.bundle)
                 log.error("[reauth] Email mismatch: got \(email), expected \(account.email)")
                 isLoggingIn = false
                 return

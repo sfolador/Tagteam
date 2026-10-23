@@ -1,10 +1,10 @@
 /* Widget Configuration */
 "Monitor your Claude Code account usage, costs, and activity." = "Monitor your Claude Code account usage, costs, and activity.";
-"CCSwitcher Rings" = "CCSwitcher Rings";
+"Tagteam Rings" = "Tagteam Rings";
 "Session and weekly usage shown as circular progress rings." = "Session and weekly usage shown as circular progress rings.";
 
 /* Widget Views */
-"Open CCSwitcher" = "Open CCSwitcher";
+"Open Tagteam" = "Open Tagteam";
 "to load data" = "to load data";
 "today" = "today";
 "No accounts" = "No accounts";
