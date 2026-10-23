@@ -15,7 +15,7 @@ struct SettingsView: View {
     @AppStorage("settingsSection") private var settingsSection = "general"
     @State private var launchAtLogin = false
 
-    private static let sectionIds = ["general", "profiles", "menuBar", "claudeCLI", "codex", "about"]
+    private static let sectionIds = ["general", "profiles", "menuBar", "claudeCLI", "claudeDesktop", "codex", "about"]
 
     /// Unknown stored values fall back to the first tab.
     private var selectedSection: Binding<String> {
@@ -50,6 +50,12 @@ struct SettingsView: View {
                     Label("Claude CLI", systemImage: "terminal")
                 }
                 .tag("claudeCLI")
+
+            ClaudeDesktopSettingsView()
+                .tabItem {
+                    Label("Claude Desktop", systemImage: "macwindow")
+                }
+                .tag("claudeDesktop")
 
             CodexSettingsView()
                 .tabItem {

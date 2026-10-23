@@ -238,3 +238,18 @@
 "%@: %@" = "%@：%@";
 "Costs" = "费用";
 "Claude Code · This Mac · API-equivalent" = "Claude Code · 本机 · API 等效";
+
+/* Claude desktop app */
+"Claude Desktop" = "Claude 桌面版";
+"Move the Claude desktop app to the account when switching" = "切换时让 Claude 桌面应用跟随该账户";
+"If the desktop app is open it is quit and reopened on the account's own login folder. If it does not quit within 15 seconds it is left alone." = "如果桌面应用已打开，将退出并使用该账户专属的登录文件夹重新打开。若 15 秒内未退出则保持不变。";
+"Automatic (new folder on first switch)" = "自动（首次切换时新建文件夹）";
+"New folder (%@)" = "新建文件夹（%@）";
+"Don't manage" = "不管理";
+"Desktop login folder per account" = "每个账户的桌面登录文件夹";
+"The first launch on a new folder shows the Claude desktop login once." = "在新文件夹上首次启动时，会显示一次 Claude 桌面版登录。";
+"Launching Claude from the Dock always opens the default folder (Claude). Extensions and settings are kept per folder." = "从 Dock 启动 Claude 始终打开默认文件夹（Claude）。扩展和设置按文件夹分别保存。";
+"Open Claude desktop as this account" = "以此账户打开 Claude 桌面版";
+"Claude desktop app is not installed." = "未安装 Claude 桌面应用。";
+"The Claude desktop app did not quit in time and still uses its previous login." = "Claude 桌面应用未及时退出，仍使用之前的登录。";
+"The Claude desktop app could not be reopened: %@" = "无法重新打开 Claude 桌面应用：%@";

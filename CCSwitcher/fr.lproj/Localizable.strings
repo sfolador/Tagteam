@@ -238,3 +238,18 @@
 "%@: %@" = "%@ : %@";
 "Costs" = "Coûts";
 "Claude Code · This Mac · API-equivalent" = "Claude Code · Ce Mac · équivalent API";
+
+/* Claude desktop app */
+"Claude Desktop" = "Claude Desktop";
+"Move the Claude desktop app to the account when switching" = "Basculer l’app Claude Desktop sur le compte lors du changement";
+"If the desktop app is open it is quit and reopened on the account's own login folder. If it does not quit within 15 seconds it is left alone." = "Si l’app de bureau est ouverte, elle est quittée puis rouverte sur le dossier de connexion du compte. Si elle ne se ferme pas en 15 secondes, elle est laissée telle quelle.";
+"Automatic (new folder on first switch)" = "Automatique (nouveau dossier au premier changement)";
+"New folder (%@)" = "Nouveau dossier (%@)";
+"Don't manage" = "Ne pas gérer";
+"Desktop login folder per account" = "Dossier de connexion de bureau par compte";
+"The first launch on a new folder shows the Claude desktop login once." = "Le premier lancement sur un nouveau dossier affiche une fois la connexion de Claude Desktop.";
+"Launching Claude from the Dock always opens the default folder (Claude). Extensions and settings are kept per folder." = "Lancer Claude depuis le Dock ouvre toujours le dossier par défaut (Claude). Les extensions et réglages sont propres à chaque dossier.";
+"Open Claude desktop as this account" = "Ouvrir Claude Desktop avec ce compte";
+"Claude desktop app is not installed." = "L’app Claude Desktop n’est pas installée.";
+"The Claude desktop app did not quit in time and still uses its previous login." = "L’app Claude Desktop ne s’est pas fermée à temps et utilise toujours sa connexion précédente.";
+"The Claude desktop app could not be reopened: %@" = "L’app Claude Desktop n’a pas pu être rouverte : %@";

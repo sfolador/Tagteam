@@ -241,3 +241,18 @@
 "%@: %@" = "%@: %@";
 "Costs" = "Costs";
 "Claude Code · This Mac · API-equivalent" = "Claude Code · This Mac · API-equivalent";
+
+/* Claude desktop app */
+"Claude Desktop" = "Claude Desktop";
+"Move the Claude desktop app to the account when switching" = "Move the Claude desktop app to the account when switching";
+"If the desktop app is open it is quit and reopened on the account's own login folder. If it does not quit within 15 seconds it is left alone." = "If the desktop app is open it is quit and reopened on the account's own login folder. If it does not quit within 15 seconds it is left alone.";
+"Automatic (new folder on first switch)" = "Automatic (new folder on first switch)";
+"New folder (%@)" = "New folder (%@)";
+"Don't manage" = "Don't manage";
+"Desktop login folder per account" = "Desktop login folder per account";
+"The first launch on a new folder shows the Claude desktop login once." = "The first launch on a new folder shows the Claude desktop login once.";
+"Launching Claude from the Dock always opens the default folder (Claude). Extensions and settings are kept per folder." = "Launching Claude from the Dock always opens the default folder (Claude). Extensions and settings are kept per folder.";
+"Open Claude desktop as this account" = "Open Claude desktop as this account";
+"Claude desktop app is not installed." = "Claude desktop app is not installed.";
+"The Claude desktop app did not quit in time and still uses its previous login." = "The Claude desktop app did not quit in time and still uses its previous login.";
+"The Claude desktop app could not be reopened: %@" = "The Claude desktop app could not be reopened: %@";

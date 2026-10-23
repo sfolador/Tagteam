@@ -64,6 +64,7 @@ final class AppState: ObservableObject {
     private let costParser = CostParser.shared
     private let activityParser = ActivityParser.shared
     private let keychain = KeychainService.shared
+    private let claudeDesktop = ClaudeDesktopService()
 
     private let accountsKey = "com.ccswitcher.accounts"
     private let profilesKey = "com.ccswitcher.profiles"
@@ -134,6 +135,7 @@ final class AppState: ObservableObject {
         log.info("[init] Loading accounts from UserDefaults...")
         loadAccounts()
         loadProfiles()
+        Task { await autoMapClaudeDesktopFolders() }
         log.info("[init] Loaded \(self.accounts.count) accounts, active: \(self.activeAccount?.id.uuidString ?? "none")")
     }
 
@@ -183,6 +185,8 @@ final class AppState: ObservableObject {
                 errorMessage = error.localizedDescription
             }
         }
+
+        await autoMapClaudeDesktopFolders()
 
         // Codex never breaks the Claude refresh: every failure inside is
         // caught and recorded per account.
@@ -556,9 +560,14 @@ final class AppState: ObservableObject {
             if refreshAfter {
                 await refresh()
             }
+            // The Claude Code switch is done and stays done whatever happens to the desktop app.
+            let desktopWarning = await followClaudeDesktop(to: account)
             // `refresh()` clears errorMessage, so surface the warning afterwards.
             if let shadowedBy = outcome.shadowedBy {
                 errorMessage = String(localized: "Switched to \(account.displayEmail(obfuscated: !UserDefaults.standard.bool(forKey: "showFullEmail"))), but the Claude CLI is authenticating via \(shadowedBy) instead of the stored login, so it will not use this account.", bundle: L10n.bundle)
+            }
+            if let desktopWarning {
+                errorMessage = [errorMessage, desktopWarning].compactMap { $0 }.joined(separator: "\n")
             }
             log.info("[switchTo] ===== Switch completed =====")
             return true
@@ -637,6 +646,135 @@ final class AppState: ObservableObject {
         }
         log.info("[switchCodex] ===== Switch completed =====")
         return true
+    }
+
+    // MARK: - Claude desktop app
+
+    /// Missing value = on: without it the desktop app keeps the previous login.
+    var claudeDesktopFollowEnabled: Bool {
+        UserDefaults.standard.object(forKey: "claudeDesktopFollow") as? Bool ?? true
+    }
+
+    /// Existing `Claude*` user-data folders, for the settings picker.
+    func discoverClaudeDesktopFolders() async -> [ClaudeDesktopService.Folder] {
+        await claudeDesktop.discoverFolders()
+    }
+
+    /// Gives every Claude account without a folder the `Claude*` folder whose
+    /// `lastKnownAccountUuid` equals the account's `oauthAccount.accountUuid`.
+    /// The folder scan is a few tiny reads; the keychain is only touched when an
+    /// unclaimed folder with a UUID exists.
+    func autoMapClaudeDesktopFolders() async {
+        let pending = accounts.filter { $0.provider == .claudeCode && $0.claudeDesktopDataDir == nil }
+        guard !pending.isEmpty else { return }
+        let claimed = Set(accounts.compactMap(\.claudeDesktopDataDir))
+        let folders = await claudeDesktop.discoverFolders().filter { $0.accountUuid != nil && !claimed.contains($0.name) }
+        guard !folders.isEmpty else { return }
+
+        var uuids: [UUID: String] = [:]
+        for account in pending {
+            if let backup = keychain.getAccountBackup(forAccountId: account.id.uuidString),
+               let uuid = backup.oauthAccount["accountUuid"]?.value as? String {
+                uuids[account.id] = uuid
+            }
+        }
+        let mapping = ClaudeDesktopService.autoMap(accountUuids: uuids, folders: folders, claimed: claimed)
+        guard !mapping.isEmpty else { return }
+        // Re-read by id: the awaits above may have let `accounts` change.
+        var changed = false
+        for (id, folder) in mapping {
+            guard let i = accounts.firstIndex(where: { $0.id == id }), accounts[i].claudeDesktopDataDir == nil,
+                  !accounts.contains(where: { $0.claudeDesktopDataDir == folder }) else { continue }
+            accounts[i].claudeDesktopDataDir = folder
+            changed = true
+        }
+        if changed {
+            saveAccounts()
+            log.info("[claudeDesktop] Auto-mapped \(mapping.count) account(s) to desktop folders")
+        }
+    }
+
+    /// Folder for `account`, minting and storing a fresh `Claude-<slug>` when none
+    /// is set. nil = the user opted this account out.
+    private func claudeDesktopFolder(for account: Account) -> String? {
+        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else { return nil }
+        switch accounts[index].claudeDesktopDataDir {
+        case .some(ClaudeDesktopService.unmanaged): return nil
+        case .some(let dir): return dir
+        case .none:
+            let name = newClaudeDesktopFolderName(for: accounts[index])
+            accounts[index].claudeDesktopDataDir = name
+            saveAccounts()
+            return name
+        }
+    }
+
+    private func newClaudeDesktopFolderName(for account: Account) -> String {
+        let used = Set(accounts.compactMap(\.claudeDesktopDataDir))
+            .union(claudeDesktop.scanFolders().map(\.name))
+            .union([ClaudeDesktopService.defaultDataDir])
+        return ClaudeDesktopService.newFolderName(label: account.customLabel, email: account.email, existing: used)
+    }
+
+    /// Settings picker: a folder name, `ClaudeDesktopService.unmanaged` (""), or nil to decide at the next switch.
+    func setClaudeDesktopDataDir(_ account: Account, to dir: String?, newFolder: Bool = false) {
+        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else { return }
+        if newFolder {
+            accounts[index].claudeDesktopDataDir = newClaudeDesktopFolderName(for: accounts[index])
+        } else {
+            accounts[index].claudeDesktopDataDir = dir
+        }
+        saveAccounts()
+    }
+
+    /// What the settings picker offers for "New folder".
+    func proposedClaudeDesktopFolderName(for account: Account) -> String {
+        newClaudeDesktopFolderName(for: account)
+    }
+
+    /// Called after a successful Claude switch. Returns a message for the user, nil when
+    /// nothing went wrong (including "nothing to do").
+    private func followClaudeDesktop(to account: Account) async -> String? {
+        guard claudeDesktopFollowEnabled, await claudeDesktop.isInstalled(),
+              let folder = claudeDesktopFolder(for: account) else { return nil }
+        return claudeDesktopMessage(for: await claudeDesktop.follow(dataDir: folder))
+    }
+
+    /// "Open Claude desktop as this account": quit/reopen on the account's folder
+    /// without touching the Claude Code credentials.
+    func openClaudeDesktop(as account: Account) async {
+        guard account.provider == .claudeCode, !isSwitching else { return }
+        guard await claudeDesktop.isInstalled() else {
+            errorMessage = claudeDesktopMessage(for: .notInstalled)
+            return
+        }
+        isSwitching = true
+        defer { isSwitching = false }
+        let folder: String
+        if let dir = account.claudeDesktopDataDir, !dir.isEmpty {
+            folder = dir
+        } else {
+            // Not decided yet, or opted out: asking to open it as this account is an explicit choice.
+            setClaudeDesktopDataDir(account, to: nil, newFolder: true)
+            guard let dir = accounts.first(where: { $0.id == account.id })?.claudeDesktopDataDir else { return }
+            folder = dir
+        }
+        if let message = claudeDesktopMessage(for: await claudeDesktop.follow(dataDir: folder, launchIfClosed: true)) {
+            errorMessage = message
+        }
+    }
+
+    private func claudeDesktopMessage(for outcome: ClaudeDesktopService.Outcome) -> String? {
+        switch outcome {
+        case .notRunning, .alreadyOnTarget, .relaunched:
+            return nil
+        case .notInstalled:
+            return String(localized: "Claude desktop app is not installed.", bundle: L10n.bundle)
+        case .quitTimedOut:
+            return String(localized: "The Claude desktop app did not quit in time and still uses its previous login.", bundle: L10n.bundle)
+        case .launchFailed(let detail):
+            return String(localized: "The Claude desktop app could not be reopened: \(detail)", bundle: L10n.bundle)
+        }
     }
 
     // MARK: - Auto-switch

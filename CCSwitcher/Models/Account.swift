@@ -46,6 +46,11 @@ struct Account: Identifiable, Codable, Hashable {
     /// de-duplicate accounts that can share an email across providers or
     /// plans. Optional so accounts saved by older versions still decode.
     var providerAccountId: String?
+    /// Claude accounts: folder name under `~/Library/Application Support/` that
+    /// holds this account's Claude desktop login ("Claude", "Claude-Personal", …).
+    /// nil = not decided yet (auto-mapped by UUID, else a new folder on the first
+    /// switch); "" = the user opted out. Optional so older saved accounts still decode.
+    var claudeDesktopDataDir: String?
 
     var isExcludedFromAutoSwitch: Bool { excludedFromAutoSwitch == true }
 

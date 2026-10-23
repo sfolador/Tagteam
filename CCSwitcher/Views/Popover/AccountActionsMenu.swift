@@ -48,6 +48,10 @@ private struct AccountActionItems: View {
                 Task { await appState.reauthenticateAccount(account) }
             }
             .disabled(appState.isCredentialActionBusy)
+            Button("Open Claude desktop as this account") {
+                Task { await appState.openClaudeDesktop(as: account) }
+            }
+            .disabled(appState.isCredentialActionBusy || appState.isSwitching)
             Button(account.isExcludedFromAutoSwitch ? "Include in auto-switch" : "Exclude from auto-switch") {
                 appState.setExcludedFromAutoSwitch(account, excluded: !account.isExcludedFromAutoSwitch)
             }
