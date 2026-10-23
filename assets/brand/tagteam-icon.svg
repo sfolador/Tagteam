@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <title>Tagteam — handoff</title>
-  <desc>Two overlapping account tiles, slate and warm orange, joined by a cream handoff arrow.</desc>
+  <title>Tagteam — In tandem</title>
+  <desc>A warm orange account tile slides in front of its slate teammate, with a slight rotation and soft layered shadow. No arrow.</desc>
   <defs>
     <linearGradient id="body" x1="0%" y1="0%" x2="65%" y2="100%">
       <stop stop-color="#FFFEFA"/><stop offset="1" stop-color="#EDE9E1"/>
@@ -23,18 +23,15 @@
   </g>
   <use xlink:href="#shell" fill="url(#body)"/>
   <use xlink:href="#shell" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.75"/>
-  <!-- Rear teammate. -->
+  <!-- Rear account: slate, with a quiet lower shadow and fine edge light. -->
   <rect x="246" y="256" width="370" height="370" rx="92" fill="#26313C" opacity="0.08"/>
   <rect x="246" y="246" width="370" height="370" rx="92" fill="url(#slate)"/>
   <rect x="248" y="248" width="366" height="366" rx="90" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.12"/>
-  <!-- Front teammate; the overlap is deliberately large enough to survive reduction. -->
+  <!-- Rotation makes the incoming account feel active without a symbol on top. -->
+  <g transform="rotate(-8 593 593)">
   <rect x="404" y="420" width="378" height="378" rx="96" fill="#452B21" opacity="0.045"/>
   <rect x="408" y="418" width="370" height="370" rx="92" fill="#452B21" opacity="0.10"/>
   <rect x="408" y="408" width="370" height="370" rx="92" fill="url(#orange)"/>
   <rect x="410" y="410" width="366" height="366" rx="90" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.24"/>
-  <!-- One continuous handoff, without a provider logo or lettering. -->
-  <g fill="none" stroke="#FFFCF5" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M352 470 C352 384 472 372 516 444 S636 504 636 590"/>
-    <path d="M581 544 L636 599 L691 544"/>
   </g>
 </svg>
