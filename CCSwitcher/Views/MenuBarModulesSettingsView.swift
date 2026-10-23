@@ -81,8 +81,10 @@ struct MenuBarModulesSettingsView: View {
     private var previewBar: some View {
         HStack(spacing: 10) {
             if config.showsHeadIcon {
-                Image(systemName: "brain.head.profile")
-                    .font(.system(size: 13))
+                Image("MenuBarGlyph")
+                    .renderingMode(.template)
+                    .resizable()
+                    .frame(width: 15, height: 15)
             }
             ForEach(rows.filter(\.isEnabled)) { row in
                 MenuBarModuleView(

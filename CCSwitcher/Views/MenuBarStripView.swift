@@ -36,8 +36,11 @@ struct MenuBarStripView: View {
     var body: some View {
         HStack(spacing: 8) {
             if config.showsHeadIcon {
-                Image(systemName: iconFilled ? "brain.head.profile.fill" : "brain.head.profile")
-                    .font(.system(size: 14))
+                // Template glyph: macOS tints it for light/dark menu bars.
+                Image(iconFilled ? "MenuBarGlyphFilled" : "MenuBarGlyph")
+                    .renderingMode(.template)
+                    .resizable()
+                    .frame(width: 16, height: 16)
             }
 
             ForEach(config.modules) { module in
