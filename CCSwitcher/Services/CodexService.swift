@@ -39,8 +39,9 @@ actor CodexService {
     /// account was removed must not write its backup back.
     private var removedAccountIds: Set<UUID> = []
 
-    init(store: CodexCredentialStore = .shared) {
+    init(store: CodexCredentialStore = .shared, binaryPathOverride: String? = nil) {
         self.store = store
+        self.cachedBinaryPath = binaryPathOverride
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20
         self.session = URLSession(configuration: config)
@@ -465,7 +466,8 @@ actor CodexService {
     ///
     /// Counts interactive CLI sessions (a tty) and the Codex desktop app; like
     /// codex-switcher it ignores `codex app-server` helpers, headless
-    /// processes and codex-switcher itself.
+    /// processes and codex-switcher itself. The shared app-server daemon is
+    /// reported separately by `isAppServerDaemonRunning()`.
     func runningCodexProcessCount() async -> Int {
         guard let result = await CapturedProcess().run(executable: "/bin/ps", arguments: ["-axo", "pid=,tty=,command="], timeout: 5) else {
             log.warning("[processCount] ps failed or timed out")
@@ -491,6 +493,104 @@ actor CodexService {
             if isDesktop || (isCLI && tty != "??" && tty != "?") { count += 1 }
         }
         return count
+    }
+
+    // MARK: - App-server daemon
+
+    /// Outcome of `switchAccountRestartingAppServer`. The switch itself
+    /// succeeded in every case; this only reports what happened to the daemon.
+    enum AppServerRestart: Equatable, Sendable {
+        case notRunning
+        case restarted
+        case restartFailed(String)
+    }
+
+    private static let daemonStopTimeout: TimeInterval = 15
+    private static let daemonStartTimeout: TimeInterval = 30
+    private static let daemonExitWait: TimeInterval = 10
+
+    private nonisolated var daemonPidFileURL: URL {
+        codexHome().appendingPathComponent("app-server-daemon/daemon.pid")
+    }
+
+    /// Pid of the shared `codex app-server` daemon, or nil when its pid file
+    /// is missing or stale, or the pid now belongs to something else. The
+    /// daemon keeps the login in memory and can write its old tokens back to
+    /// auth.json, so a switch has no effect on it until it restarts.
+    private func appServerDaemonPid() async -> Int32? {
+        guard let data = FileManager.default.contents(atPath: daemonPidFileURL.path),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let number = object["pid"] as? NSNumber else { return nil }
+        let pid = number.int32Value
+        guard pid > 1, kill(pid, 0) == 0 || errno == EPERM else { return nil }
+        guard let result = await CapturedProcess().run(executable: "/bin/ps", arguments: ["-p", String(pid), "-o", "command="], timeout: 5),
+              result.status == 0 else { return nil }
+        let command = String(decoding: result.output, as: UTF8.self)
+        return command.contains("app-server") ? pid : nil
+    }
+
+    func isAppServerDaemonRunning() async -> Bool {
+        await appServerDaemonPid() != nil
+    }
+
+    /// Switch accounts while the app-server daemon is stopped, so it can flush
+    /// its tokens first (the switch re-captures them) and reloads auth.json when
+    /// started again. The daemon is only started again if it was running.
+    func switchAccountRestartingAppServer(to target: UUID, from current: UUID?) async throws(CodexServiceError) -> AppServerRestart {
+        guard let pid = await appServerDaemonPid() else {
+            try switchAccount(to: target, from: current)
+            return .notRunning
+        }
+        guard let binary = await codexBinaryPath() else { throw .notInstalled }
+
+        log.info("[appServer] stopping daemon (pid \(pid)) before switching")
+        guard let stop = await CapturedProcess().run(executable: binary, arguments: ["app-server", "daemon", "stop"], timeout: Self.daemonStopTimeout, discardOutput: true) else {
+            log.error("[appServer] `daemon stop` failed to run or timed out")
+            throw .appServerStopFailed("timed out")
+        }
+        guard stop.status == 0 else {
+            log.error("[appServer] `daemon stop` exited \(stop.status)")
+            throw .appServerStopFailed("exit status \(stop.status)")
+        }
+        guard await waitForExit(pid: pid, timeout: Self.daemonExitWait) else {
+            log.error("[appServer] daemon pid \(pid) still alive after stop")
+            throw .appServerStopFailed("the process did not exit")
+        }
+
+        do {
+            try switchAccount(to: target, from: current)
+        } catch {
+            // Do not leave the user without a daemon because the switch failed.
+            _ = await startAppServer(binary: binary)
+            throw error
+        }
+        if let failure = await startAppServer(binary: binary) {
+            return .restartFailed(failure)
+        }
+        return .restarted
+    }
+
+    /// Nil on success, else a short failure detail.
+    private func startAppServer(binary: String) async -> String? {
+        guard let start = await CapturedProcess().run(executable: binary, arguments: ["app-server", "daemon", "start"], timeout: Self.daemonStartTimeout, discardOutput: true) else {
+            log.error("[appServer] `daemon start` failed to run or timed out")
+            return "timed out"
+        }
+        guard start.status == 0 else {
+            log.error("[appServer] `daemon start` exited \(start.status)")
+            return "exit status \(start.status)"
+        }
+        log.info("[appServer] daemon restarted")
+        return nil
+    }
+
+    private func waitForExit(pid: Int32, timeout: TimeInterval) async -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while kill(pid, 0) == 0 {
+            if Date() >= deadline { return false }
+            try? await Task.sleep(for: .milliseconds(200))
+        }
+        return true
     }
 
     // MARK: - auth.json I/O
@@ -805,17 +905,27 @@ private final class CapturedProcess: @unchecked Sendable {
     private var finished = false
     private var continuation: CheckedContinuation<(status: Int32, output: Data)?, Never>?
 
-    func run(executable: String, arguments: [String], timeout: TimeInterval) async -> (status: Int32, output: Data)? {
+    /// `discardOutput`: for commands that may leave a detached child holding
+    /// stdout open (e.g. `codex app-server daemon start`); waiting for EOF on a
+    /// pipe would then only end at the timeout.
+    func run(executable: String, arguments: [String], timeout: TimeInterval, discardOutput: Bool = false) async -> (status: Int32, output: Data)? {
         let pipe = Pipe()
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
-        process.standardOutput = pipe
+        if discardOutput {
+            process.standardOutput = FileHandle.nullDevice
+            eof = true
+        } else {
+            process.standardOutput = pipe
+        }
         process.standardError = FileHandle.nullDevice
         process.standardInput = FileHandle.nullDevice
 
-        pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
-            let chunk = handle.availableData
-            self?.received(chunk)
+        if !discardOutput {
+            pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
+                let chunk = handle.availableData
+                self?.received(chunk)
+            }
         }
         process.terminationHandler = { [weak self] finished in
             self?.terminated(finished.terminationStatus)

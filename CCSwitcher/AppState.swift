@@ -53,6 +53,8 @@ final class AppState: ObservableObject {
     @Published var isLoggingInCodex = false
     /// Running `codex` processes; non-zero means a switch may be undone by a live session.
     @Published var runningCodexSessions = 0
+    /// The shared `codex app-server` daemon is up; it keeps the login it started with.
+    @Published var codexAppServerRunning = false
 
     // MARK: - Services
 
@@ -584,16 +586,34 @@ final class AppState: ObservableObject {
         let currentId = activeCodexAccount?.id
         log.info("[switchCodex] ===== Switching Codex to \(account.id) =====")
         isLoading = true
-        switch await codexResult(try await CodexService.shared.switchAccount(to: account.id, from: currentId)) {
-        case .failure(let error):
-            // .unmanagedLogin included: state stays untouched, the views offer
-            // the deep link to Codex settings.
-            errorMessage = error.localizedDescription
-            isLoading = false
-            log.error("[switchCodex] Switch failed: \(error.localizedDescription)")
-            return false
-        case .success:
-            break
+        // Missing value = on: the daemon would otherwise keep the old account.
+        let restartAppServer = UserDefaults.standard.object(forKey: "codexRestartAppServer") as? Bool ?? true
+        let restart: CodexService.AppServerRestart
+        if restartAppServer {
+            switch await codexResult(try await CodexService.shared.switchAccountRestartingAppServer(to: account.id, from: currentId)) {
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+                isLoading = false
+                log.error("[switchCodex] Switch failed: \(error.localizedDescription)")
+                return false
+            case .success(let outcome):
+                restart = outcome
+            }
+        } else {
+            switch await codexResult(try await CodexService.shared.switchAccount(to: account.id, from: currentId)) {
+            case .failure(let error):
+                // .unmanagedLogin included: state stays untouched, the views offer
+                // the deep link to Codex settings.
+                errorMessage = error.localizedDescription
+                isLoading = false
+                log.error("[switchCodex] Switch failed: \(error.localizedDescription)")
+                return false
+            case .success:
+                restart = .notRunning
+            }
+        }
+        if case .restartFailed(let detail) = restart {
+            errorMessage = String(localized: "Switched Codex account, but the Codex app-server could not be restarted: \(detail). Restart it with `codex app-server daemon restart`.", bundle: L10n.bundle)
         }
 
         for i in accounts.indices where accounts[i].provider == .codex {
@@ -606,6 +626,7 @@ final class AppState: ObservableObject {
         saveAccounts()
         recordLastActive(account)
         runningCodexSessions = await CodexService.shared.runningCodexProcessCount()
+        codexAppServerRunning = await CodexService.shared.isAppServerDaemonRunning()
 
         if refreshAfter {
             await refresh()
@@ -1259,6 +1280,7 @@ final class AppState: ObservableObject {
         let service = CodexService.shared
         codexAvailable = await service.codexBinaryPath() != nil
         runningCodexSessions = await service.runningCodexProcessCount()
+        codexAppServerRunning = await service.isAppServerDaemonRunning()
 
         let codexAccounts = accounts(for: .codex)
         guard !codexAccounts.isEmpty else { return }

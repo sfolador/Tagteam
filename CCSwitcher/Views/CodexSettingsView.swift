@@ -4,7 +4,9 @@ import SwiftUI
 struct CodexSettingsView: View {
     @EnvironmentObject private var appState: AppState
     @AppStorage("showFullEmail") private var showFullEmail = false
+    @AppStorage("codexRestartAppServer") private var restartAppServer = true
     @State private var binaryPath: String?
+    @State private var appServerRunning: Bool?
     @State private var pendingRemoval: Account?
 
     private var codexHome: String {
@@ -114,9 +116,27 @@ struct CodexSettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             }
+
+            Section {
+                LabeledContent("App-server") {
+                    switch appServerRunning {
+                    case .some(true): Label("Running", systemImage: "circle.fill").foregroundStyle(.green)
+                    case .some(false): Label("Not running", systemImage: "circle").foregroundStyle(.secondary)
+                    case .none: ProgressView().controlSize(.small)
+                    }
+                }
+                Toggle("Restart the Codex app-server when switching", isOn: $restartAppServer)
+            } footer: {
+                Text("ChatGPT.app and Codex clients keep the login in memory through this background service. Restarting it interrupts Codex tasks that are running.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
-        .task { binaryPath = await CodexService.shared.codexBinaryPath() }
+        .task {
+            binaryPath = await CodexService.shared.codexBinaryPath()
+            appServerRunning = await CodexService.shared.isAppServerDaemonRunning()
+        }
         .confirmationDialog(
             "Remove Codex account?",
             isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { pendingRemoval = nil } }),

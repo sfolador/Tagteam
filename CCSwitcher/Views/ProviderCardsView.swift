@@ -6,6 +6,7 @@ struct ProviderCardsView: View {
     @EnvironmentObject private var menuBarConfig: MenuBarConfig
     @AppStorage("showFullEmail") private var showFullEmail = false
     @AppStorage("settingsSection") private var settingsSection = ""
+    @AppStorage("codexRestartAppServer") private var restartsAppServer = true
 
     private var claudeAccount: AppState.CardAccount? {
         appState.cardAccount(for: .claudeCode)
@@ -85,6 +86,17 @@ struct ProviderCardsView: View {
                     Text(appState.runningCodexSessions == 1
                         ? "1 Codex session running — restart it to use the switched account"
                         : "\(appState.runningCodexSessions) Codex sessions running — restart them to use the switched account")
+                        .font(.caption2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundStyle(.textSecondary)
+            }
+
+            if appState.codexAppServerRunning && !restartsAppServer {
+                HStack(alignment: .top, spacing: 4) {
+                    Image(systemName: "info.circle")
+                        .font(.caption2)
+                    Text("Codex app-server running — it keeps the previous account until restarted")
                         .font(.caption2)
                         .fixedSize(horizontal: false, vertical: true)
                 }

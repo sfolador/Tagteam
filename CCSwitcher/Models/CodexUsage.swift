@@ -55,6 +55,7 @@ enum CodexServiceError: LocalizedError, Equatable {
     case unauthorized
     case rateLimited(retryAfter: TimeInterval?)
     case http(status: Int, body: String)
+    case appServerStopFailed(String)
     case notImplemented
 
     var errorDescription: String? {
@@ -70,6 +71,7 @@ enum CodexServiceError: LocalizedError, Equatable {
         case .unauthorized: String(localized: "Codex session expired. Log in again.", bundle: L10n.bundle)
         case .rateLimited: String(localized: "Codex usage endpoint is rate limited.", bundle: L10n.bundle)
         case .http(let status, _): String(localized: "Codex usage request failed (HTTP \(status)).", bundle: L10n.bundle)
+        case .appServerStopFailed(let detail): String(localized: "Could not stop the Codex app-server to switch accounts: \(detail)", bundle: L10n.bundle)
         case .notImplemented: String(localized: "Not implemented.", bundle: L10n.bundle)
         }
     }
