@@ -26,6 +26,11 @@ struct UsageDashboardView: View {
     @EnvironmentObject private var menuBarConfig: MenuBarConfig
     @AppStorage("showFullEmail") private var showFullEmail = false
 
+    private var otherClaudeAccounts: [Account] {
+        let cardId = appState.cardAccount(for: .claudeCode)?.account.id
+        return appState.profileAccounts(for: .claudeCode).filter { $0.id != cardId }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -40,6 +45,8 @@ struct UsageDashboardView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
                 } else if appState.accounts.isEmpty {
+                    // Tests all providers: a Codex-only user has no Claude accounts but
+                    // still gets the cost/activity cards; Codex limits sit in the popover card.
                     VStack(spacing: 12) {
                         Image(systemName: "chart.bar.xaxis")
                             .font(.system(size: 32))
@@ -57,7 +64,9 @@ struct UsageDashboardView: View {
                     // Today's activity stats
                     todayActivityCard
 
-                    ForEach(appState.accounts) { account in
+                    // The live Claude account's limits live in the popover's
+                    // provider card; keep the other in-scope Claude accounts here.
+                    ForEach(otherClaudeAccounts) { account in
                         accountUsageCard(account: account, usage: appState.accountUsage[account.id])
                     }
                 }

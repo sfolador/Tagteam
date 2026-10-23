@@ -497,6 +497,52 @@ diagnoseTokenHealth()
 
 ---
 
+## Codex Accounts — Token Flow
+
+Codex CLI credentials live in a single file, `~/.codex/auth.json` (`$CODEX_HOME` overrides the directory; `CodexService.codexHome()`, `CCSwitcher/Services/CodexService.swift:52`). CCSwitcher never touches it except through `CodexService`.
+
+**Backups.** Every Codex account has a backup copy of its `auth.json` stored in one Keychain item (service `CCSwitcher-codex-backups`, account `all-accounts`) as a JSON map `accountId → raw auth.json` (`CCSwitcher/Services/CodexCredentialStore.swift:38`). Reads and writes go through `/usr/bin/security`.
+
+**Capture** (`captureCurrentCredentials`, `CodexService.swift:73`): `codex login` runs in a `Process` (`login()`, `CodexService.swift:146`); the previous `auth.json` is restored if the login fails or is cancelled. On success the new `auth.json` is copied into the backup store under the new account's UUID. "Import current Codex login" does the same without running a login (`AppState+Profiles.swift:167`). API-key logins are rejected (`AppState+Profiles.swift:202`).
+
+**Switch A → B** (`switchAccount`, `CodexService.swift:95`):
+
+```
+1. Read B's backup first        (failure here touches nothing)
+2. Re-capture live auth.json into A's backup   (Codex rotates tokens in place;
+                                                skipped if the live file belongs to a different ChatGPT account)
+3. Atomically write B's backup to ~/.codex/auth.json, mode 0600
+```
+
+Running `codex` sessions keep their in-memory tokens and may rewrite `auth.json` themselves, so they must be restarted after a switch. `runningCodexProcessCount()` (`CodexService.swift:371`) feeds the warning in the popover.
+
+**Usage and refresh** (`fetchUsage(forAccountId:isLive:)`, `CodexService.swift:206`):
+
+- **The live account is never refreshed by CCSwitcher.** Its tokens belong to the running Codex CLI, and refresh tokens are single-use: refreshing from here would invalidate the CLI's refresh token and log it out. We only read the access token and call the usage endpoint.
+- **Non-live (backup) accounts** are refreshed when the id/access token is expired, and the rotated tokens are persisted to the backup *before* returning (`CodexService.swift:296`). If the account became live mid-refresh, the new tokens are carried over into `auth.json` (`syncLiveIfStale`, `CodexService.swift:355`).
+- A 401 triggers one refresh for backup accounts; a 403 is treated as a Cloudflare challenge and never refreshed.
+- `AppState.refreshCodex()` (`AppState.swift:1254`) polls the live account every cycle plus one other account round-robin, honoring `Retry-After`.
+
+---
+
+## Profiles
+
+A `Profile` (`CCSwitcher/Models/Profile.swift`) groups Claude and Codex accounts by id; an account may be in several profiles. Profiles are stored in UserDefaults under `com.ccswitcher.profiles`, and the selection under `com.ccswitcher.activeProfileId` (`AppState.swift:66`). `activeProfileId == nil` means "All accounts", i.e. the pre-profile behavior.
+
+Each provider has its own live account: `activeAccount` is the live Claude account, `activeCodexAccount` the live Codex one (`AppState+Profiles.swift:15`).
+
+**Activation** (`activateProfile`, `AppState+Profiles.swift:85`): for each provider, `Profile.activationTarget` (`Profile.swift:52`) picks the account to be live:
+
+1. the currently live account, if it is a member of the profile;
+2. else the profile's last-active member for that provider;
+3. else the profile's first member.
+
+If the target is already live nothing is switched; otherwise the regular `performSwitch` runs (Claude keychain swap or Codex `auth.json` swap). Providers with no members are left alone. Partial failures are collected and shown after the refresh.
+
+**Scoping.** While a profile is active, `profileAccounts(for:)` (`AppState+Profiles.swift:30`) restricts the popover account list and the Claude auto-switch candidates (`AppState.swift:651`) to the profile's members.
+
+---
+
 ## Data Flow Overview
 
 ```

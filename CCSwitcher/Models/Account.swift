@@ -42,6 +42,10 @@ struct Account: Identifiable, Codable, Hashable {
     /// and auto-switch stands down while it is active. Optional so accounts
     /// saved by older versions still decode.
     var excludedFromAutoSwitch: Bool?
+    /// Provider-side stable identity (Codex: the ChatGPT account id), used to
+    /// de-duplicate accounts that can share an email across providers or
+    /// plans. Optional so accounts saved by older versions still decode.
+    var providerAccountId: String?
 
     var isExcludedFromAutoSwitch: Bool { excludedFromAutoSwitch == true }
 
@@ -96,7 +100,8 @@ struct Account: Identifiable, Codable, Hashable {
         subscriptionType: String? = nil,
         isActive: Bool = false,
         lastUsed: Date? = nil,
-        customLabel: String? = nil
+        customLabel: String? = nil,
+        providerAccountId: String? = nil
     ) {
         self.id = id
         self.email = email
@@ -107,6 +112,7 @@ struct Account: Identifiable, Codable, Hashable {
         self.isActive = isActive
         self.lastUsed = lastUsed
         self.customLabel = customLabel
+        self.providerAccountId = providerAccountId
     }
 }
 

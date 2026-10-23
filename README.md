@@ -34,6 +34,13 @@ CCSwitcher is a lightweight, pure menu bar macOS application designed to help de
 - **Seamless Login Flow**: Add new accounts without ever opening a terminal. The app silently invokes the CLI and handles the browser OAuth loop for you.
 - **System-Native UX**: A clean, native SwiftUI interface that behaves exactly like a first-class macOS menu bar utility, complete with a fully functional settings window.
 
+## Profiles & Codex
+
+- **Profiles**: Group accounts into named profiles such as *Personal* and *Work*. A profile can hold any number of Claude Code and Codex accounts, and an account can belong to several profiles. Pick a profile from the pills at the top of the popover: CCSwitcher keeps the live account of each provider if it is a member, otherwise switches to the profile's last-used (or first) account, and limits the account list and auto-switch to that profile. Choose **All** to go back to every account.
+- **Codex accounts**: Add OpenAI Codex CLI accounts next to your Claude Code ones and see their 5-hour and weekly limits in the popover. Switching works by swapping `~/.codex/auth.json` (written atomically, mode `0600`); log in a new account from the popover or import the login the Codex CLI is already using.
+- **Restart running Codex sessions after a switch.** A running `codex` process keeps the account it started with and may write its own tokens back, so CCSwitcher shows a notice while sessions are running.
+- **Where credentials live**: Codex credentials are backed up in the macOS Keychain item `CCSwitcher-codex-backups`. The live account's tokens are never refreshed by CCSwitcher (refresh tokens are single-use and belong to the Codex CLI); backup accounts are refreshed on demand.
+
 ## Screenshots
 
 <p align="center">

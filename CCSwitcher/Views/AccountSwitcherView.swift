@@ -7,6 +7,7 @@ struct AccountSwitcherView: View {
     @State private var showingAddConfirm = false
     @State private var editingAccountId: UUID?
     @State private var editingLabel = ""
+    @State private var pendingCodexRemoval: Account?
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -17,12 +18,26 @@ struct AccountSwitcherView: View {
                     if appState.accounts.isEmpty {
                         emptyState
                     } else {
-                        ForEach(appState.accounts) { account in
-                            accountRow(account)
+                        providerSection(.claudeCode, title: "Claude Code")
+                        if appState.codexAvailable || !appState.accounts(for: .codex).isEmpty {
+                            providerSection(.codex, title: "Codex")
                         }
                     }
                 }
                 .padding(16)
+            }
+            .confirmationDialog(
+                "Remove Codex account?",
+                isPresented: Binding(get: { pendingCodexRemoval != nil }, set: { if !$0 { pendingCodexRemoval = nil } }),
+                presenting: pendingCodexRemoval
+            ) { account in
+                Button("Remove", role: .destructive) {
+                    appState.removeAccount(account)
+                    pendingCodexRemoval = nil
+                }
+                Button("Cancel", role: .cancel) { pendingCodexRemoval = nil }
+            } message: { _ in
+                Text("Remove this Codex account? Its stored login is deleted from CCSwitcher.")
             }
 
             addAccountButtons
@@ -52,14 +67,79 @@ struct AccountSwitcherView: View {
         .padding(.vertical, 40)
     }
 
+    // MARK: - Provider Section
+
+    private func providerSection(_ provider: AIProviderType, title: LocalizedStringKey) -> some View {
+        let rows = appState.profileAccounts(for: provider)
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.textSecondary)
+                    .textCase(.uppercase)
+                Spacer()
+                if provider == .codex {
+                    codexAddControl
+                }
+            }
+            if rows.isEmpty {
+                Text("No accounts in this scope")
+                    .font(.caption)
+                    .foregroundStyle(.textSecondary)
+                    .padding(.vertical, 4)
+            } else {
+                ForEach(rows) { account in
+                    accountRow(account)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var codexAddControl: some View {
+        if appState.isLoggingInCodex {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("Waiting for browser login...")
+                    .font(.caption2)
+                    .foregroundStyle(.textSecondary)
+                Button("Cancel") { appState.cancelCodexLogin() }
+                    .buttonStyle(.plain)
+                    .font(.caption2)
+                    .foregroundStyle(.brand)
+            }
+        } else {
+            Menu {
+                Button("Log in new account") {
+                    Task { await appState.loginNewCodexAccount() }
+                }
+                Button("Import current Codex login") {
+                    Task { await appState.importCurrentCodexLogin() }
+                }
+            } label: {
+                Image(systemName: "plus.circle")
+                    .font(.caption)
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .disabled(!appState.codexAvailable)
+        }
+    }
+
     // MARK: - Account Row
 
+    private func isLive(_ account: Account) -> Bool {
+        appState.activeAccount(for: account.provider)?.id == account.id
+    }
+
     private func accountRow(_ account: Account) -> some View {
-        HStack(spacing: 12) {
+        let live = isLive(account)
+        return HStack(spacing: 12) {
             // Provider icon
             Image(systemName: account.provider.iconName)
                 .font(.title2)
-                .foregroundStyle(account.isActive ? .brand : .secondary)
+                .foregroundStyle(live ? .brand : .secondary)
                 .frame(width: 32, height: 32)
 
             // Account info
@@ -103,7 +183,7 @@ struct AccountSwitcherView: View {
                         .buttonStyle(.plain)
                         .help("Edit label")
 
-                        if account.isActive {
+                        if live {
                             Badge(text: String(localized: "Active", bundle: L10n.bundle), color: .green)
                         }
                     }
@@ -128,42 +208,86 @@ struct AccountSwitcherView: View {
             Spacer()
 
             // Actions
-            if !account.isActive {
+            if !live {
                 Button("Switch") {
                     Task { await appState.switchTo(account) }
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
                 .tint(.brand)
+                .disabled(appState.isAccountActionBusy)
+            }
+
+            if account.provider == .claudeCode {
+                Button {
+                    Task { await appState.reauthenticateAccount(account) }
+                } label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                .buttonStyle(.plain)
+                .help("Re-authenticate (fix stale token)")
             }
 
             Button {
-                Task { await appState.reauthenticateAccount(account) }
-            } label: {
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-            }
-            .buttonStyle(.plain)
-            .help("Re-authenticate (fix stale token)")
-
-            Button {
-                appState.removeAccount(account)
+                requestRemoval(account)
             } label: {
                 Image(systemName: "trash")
                     .font(.caption)
                     .foregroundStyle(.red)
             }
             .buttonStyle(.plain)
+            .disabled(appState.isAccountActionBusy)
             .help("Remove account")
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(account.isActive ? .cardFillStrong : .clear)
+                .fill(live ? .cardFillStrong : .clear)
                 .strokeBorder(.cardBorder, lineWidth: 1)
                 .shadow(color: AppStyle.cardShadowColor, radius: AppStyle.cardShadowRadius, x: 0, y: AppStyle.cardShadowY)
         )
+        .contentShape(RoundedRectangle(cornerRadius: 10))
+        .contextMenu { accountMenu(account) }
+    }
+
+    @ViewBuilder
+    private func accountMenu(_ account: Account) -> some View {
+        Button("Edit label") {
+            editingLabel = account.customLabel ?? ""
+            editingAccountId = account.id
+        }
+        if account.provider == .claudeCode {
+            Button(account.isExcludedFromAutoSwitch ? "Include in auto-switch" : "Exclude from auto-switch") {
+                appState.setExcludedFromAutoSwitch(account, excluded: !account.isExcludedFromAutoSwitch)
+            }
+        }
+        if !appState.profiles.isEmpty {
+            let memberOf = Set(appState.profiles(containing: account).map(\.id))
+            Menu("Profiles") {
+                ForEach(appState.profiles) { profile in
+                    Toggle(profile.name, isOn: Binding(
+                        get: { memberOf.contains(profile.id) },
+                        set: { appState.setAccount(account, in: profile, included: $0) }
+                    ))
+                }
+            }
+        }
+        Divider()
+        Button("Remove account", role: .destructive) {
+            requestRemoval(account)
+        }
+        .disabled(appState.isAccountActionBusy)
+    }
+
+    /// Codex logins are only stored in CCSwitcher's keychain, so removal asks first.
+    private func requestRemoval(_ account: Account) {
+        if account.provider == .codex {
+            pendingCodexRemoval = account
+        } else {
+            appState.removeAccount(account)
+        }
     }
 
     private func commitLabelEdit(_ account: Account) {

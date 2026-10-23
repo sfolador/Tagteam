@@ -11,7 +11,7 @@ private let popoverLog = FileLog("Popover")
 //
 // Contract for future contributors:
 //   * Every chrome element in MainMenuView.body must call `.measureChromeHeight()`.
-//     Currently: headerView, promoBanner (when shown), tabBar, footerView.
+//     Currently: ProfileBarView, ProviderCardsView, promoBanner (when shown), tabBar, footerView.
 //   * UsageDashboardView's scrollable content must call `.measureUsageContentHeight()`
 //     on its inner VStack (the one inside the ScrollView, not the ScrollView itself).
 //   * The Divider between content and footer is intentionally not measured
@@ -67,14 +67,13 @@ extension View {
 struct MainMenuView: View {
     @EnvironmentObject private var appState: AppState
     @AppStorage("refreshInterval") private var refreshInterval: Double = 300
-    @AppStorage("showFullEmail") private var showFullEmail = false
     @State private var selectedTab: Tab = .usage
 
     // Measured heights driving the popover frame.
     // Defaults are reasonable fallbacks for the first render pass, before
     // the GeometryReader-based measurements fire.
     @State private var usageContentHeight: CGFloat = 420
-    @State private var chromeHeight: CGFloat = 180
+    @State private var chromeHeight: CGFloat = 260
 
     enum Tab: String, CaseIterable {
         case usage, costs, accounts
@@ -99,7 +98,10 @@ struct MainMenuView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            headerView
+            ProfileBarView()
+                .measureChromeHeight()
+
+            ProviderCardsView()
                 .measureChromeHeight()
 
             if isPromoActive() {
@@ -240,46 +242,6 @@ struct MainMenuView: View {
         let localEnd = formatter.string(from: etEndOffPeak)
 
         return String(localized: "\(localStart) - \(localEnd) (Weekdays) & Weekends", bundle: L10n.bundle)
-    }
-
-    // MARK: - Header
-
-    private var headerView: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "brain.head.profile")
-                .font(.title2)
-                .foregroundStyle(.brand)
-
-            VStack(alignment: .leading, spacing: 3) {
-                if let account = appState.activeAccount {
-                    HStack(spacing: 6) {
-                        Text(account.effectiveDisplayName(obfuscated: !showFullEmail))
-                            .font(.headline)
-                        if let sub = account.displaySubscriptionType {
-                            Badge(text: sub, color: .brand)
-                        }
-                    }
-                    Text(account.displayEmail(obfuscated: !showFullEmail))
-                        .font(.caption)
-                        .foregroundStyle(.textSecondary)
-                } else {
-                    Text("CCSwitcher")
-                        .font(.headline)
-                    Text("No account connected")
-                        .font(.caption)
-                        .foregroundStyle(.textSecondary)
-                }
-            }
-
-            Spacer()
-
-            if appState.isLoading {
-                ProgressView()
-                    .controlSize(.small)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
     }
 
     // MARK: - Tab Bar

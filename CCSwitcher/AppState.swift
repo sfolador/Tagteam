@@ -38,6 +38,22 @@ final class AppState: ObservableObject {
     
     @Published var accountUsageErrors: [UUID: UsageErrorState] = [:]
 
+    // MARK: - Profiles & Codex (contract: see AppState+Profiles.swift)
+
+    @Published var profiles: [Profile] = []
+    /// nil = no profile active ("All accounts").
+    @Published var activeProfileId: UUID?
+    /// Live Codex account. `activeAccount` keeps meaning the live Claude account.
+    @Published var activeCodexAccount: Account?
+    @Published var codexUsage: [UUID: CodexUsage] = [:]
+    @Published var codexUsageSampledAt: [UUID: Date] = [:]
+    @Published var codexUsageErrors: [UUID: UsageErrorState] = [:]
+    @Published var codexAvailable = false
+    @Published var isSwitchingProfile = false
+    @Published var isLoggingInCodex = false
+    /// Running `codex` processes; non-zero means a switch may be undone by a live session.
+    @Published var runningCodexSessions = 0
+
     // MARK: - Services
 
     private let claudeService = ClaudeService.shared
@@ -47,6 +63,8 @@ final class AppState: ObservableObject {
     private let keychain = KeychainService.shared
 
     private let accountsKey = "com.ccswitcher.accounts"
+    private let profilesKey = "com.ccswitcher.profiles"
+    private let activeProfileIdKey = "com.ccswitcher.activeProfileId"
     private var refreshTimer: Timer?
 
     // MARK: - Usage polling state
@@ -60,6 +78,10 @@ final class AppState: ObservableObject {
     /// endpoint's rate limit is tight and shared with every running Claude Code
     /// session's own polling, so fewer requests per cycle beats a full sweep.
     private var usageFetchCursor = 0
+
+    /// Same round-robin, separate cursor for Codex accounts: the two providers'
+    /// rate limits are unrelated, so neither should consume the other's turn.
+    private var codexFetchCursor = 0
 
     /// Per-account "leave it alone until" timestamps. The usage endpoint enforces a
     /// long-window per-account quota - observed Retry-After values run into tens of
@@ -77,7 +99,8 @@ final class AppState: ObservableObject {
     /// responsive, so without this a second switch — a user click during an
     /// auto-switch verification, or vice versa — could interleave keychain and
     /// ~/.claude.json writes with the first.
-    private var isSwitching = false
+    /// Shared by Claude and Codex switches (and read by AppState+Profiles).
+    var isSwitching = false
 
     // MARK: - Auto-switch
 
@@ -99,7 +122,7 @@ final class AppState: ObservableObject {
     /// Minimum gap between two automatic switches, to avoid rapid flip-flopping.
     private let autoSwitchCooldown: TimeInterval = 300
 
-    private var lastAutoSwitchAt: Date?
+    var lastAutoSwitchAt: Date?
     private var isEvaluatingAutoSwitch = false
 
     // MARK: - Initialization
@@ -107,6 +130,7 @@ final class AppState: ObservableObject {
     init() {
         log.info("[init] Loading accounts from UserDefaults...")
         loadAccounts()
+        loadProfiles()
         log.info("[init] Loaded \(self.accounts.count) accounts, active: \(self.activeAccount?.id.uuidString ?? "none")")
     }
 
@@ -130,8 +154,8 @@ final class AppState: ObservableObject {
 
     /// Returns true only when a full refresh actually ran.
     private func refreshData() async -> Bool {
-        guard !isLoggingIn else {
-            log.info("[refresh] Skipping: login in progress")
+        guard !isLoggingIn, !isLoggingInCodex, !isSwitchingProfile else {
+            log.info("[refresh] Skipping: login or profile switch in progress")
             return false
         }
         guard !isRefreshing else {
@@ -156,6 +180,10 @@ final class AppState: ObservableObject {
                 errorMessage = error.localizedDescription
             }
         }
+
+        // Codex never breaks the Claude refresh: every failure inside is
+        // caught and recorded per account.
+        await refreshCodex()
 
         // Passive token health check (no CLI calls, keychain reads only)
         diagnoseTokenHealth()
@@ -223,19 +251,19 @@ final class AppState: ObservableObject {
             }
             log.info("[addAccount] Current auth: logged in, sub=\(status.subscriptionType ?? "nil")")
 
-            if accounts.contains(where: { $0.email == email }) {
+            if accounts.contains(where: { $0.provider == .claudeCode && $0.email == email }) {
                 errorMessage = String(localized: "Account already exists", bundle: L10n.bundle)
                 log.warning("[addAccount] Aborted: duplicate account")
                 return
             }
 
-            var account = Account(
+            let account = Account(
                 email: email,
                 displayName: status.orgName ?? email,
                 provider: .claudeCode,
                 orgName: status.orgName,
                 subscriptionType: status.subscriptionType,
-                isActive: accounts.isEmpty
+                isActive: !accounts.contains { $0.provider == .claudeCode }
             )
             log.info("[addAccount] Created account model, id=\(account.id)")
 
@@ -248,14 +276,14 @@ final class AppState: ObservableObject {
             }
             log.info("[addAccount] Token captured successfully")
 
-            if accounts.isEmpty {
-                account.isActive = true
+            if account.isActive {
                 activeAccount = account
-                log.info("[addAccount] First account, setting as active")
+                log.info("[addAccount] First Claude account, setting as active")
             }
 
             accounts.append(account)
             saveAccounts()
+            joinActiveProfile(account)
             log.info("[addAccount] Account saved. Total accounts: \(self.accounts.count)")
         } catch {
             errorMessage = error.localizedDescription
@@ -274,7 +302,7 @@ final class AppState: ObservableObject {
         // entering while a switch is suspended mid-swap would back up the
         // WRONG live credential under the old active account's id — quietly
         // destroying that account's usable backup. Also blocks double-clicks.
-        guard !isSwitching, !isLoggingIn else {
+        guard !isSwitching, !isLoggingIn, !isLoggingInCodex else {
             log.warning("[loginNewAccount] Skipped: a switch or another login is in progress")
             return
         }
@@ -321,10 +349,10 @@ final class AppState: ObservableObject {
             // using. The capture CAN also fail (e.g. the backup store refuses
             // writes while unreadable); claiming "credentials refreshed" then
             // would leave a stale backup behind an explicit success message.
-            if let existing = accounts.firstIndex(where: { $0.email == email }) {
+            if let existing = accounts.firstIndex(where: { $0.provider == .claudeCode && $0.email == email }) {
                 log.info("[loginNewAccount] Step 4: Account already exists, refreshing backup and marking it active")
                 let captured = claudeService.captureCurrentCredentials(forAccountId: accounts[existing].id.uuidString)
-                for i in accounts.indices {
+                for i in accounts.indices where accounts[i].provider == .claudeCode {
                     accounts[i].isActive = (i == existing)
                 }
                 accounts[existing].lastUsed = Date()
@@ -363,11 +391,12 @@ final class AppState: ObservableObject {
             }
 
             // 6. Mark new account as active
-            for i in accounts.indices {
+            for i in accounts.indices where accounts[i].provider == .claudeCode {
                 accounts[i].isActive = false
             }
             accounts.append(account)
             activeAccount = account
+            joinActiveProfile(account)
             // A login is a deliberate account choice; grant it the same
             // auto-switch grace period a manual switch gets.
             lastAutoSwitchAt = Date()
@@ -389,7 +418,7 @@ final class AppState: ObservableObject {
         let trimmed = label?.trimmingCharacters(in: .whitespaces)
         accounts[index].customLabel = (trimmed?.isEmpty == true) ? nil : trimmed
         if accounts[index].isActive {
-            activeAccount = accounts[index]
+            setLive(accounts[index])
         }
         saveAccounts()
         updateWidgetData()
@@ -400,7 +429,7 @@ final class AppState: ObservableObject {
         guard let index = accounts.firstIndex(where: { $0.id == account.id }) else { return }
         accounts[index].excludedFromAutoSwitch = excluded ? true : nil
         if accounts[index].isActive {
-            activeAccount = accounts[index]
+            setLive(accounts[index])
         }
         saveAccounts()
         log.info("[setExcludedFromAutoSwitch] \(account.id) excluded=\(excluded)")
@@ -408,17 +437,38 @@ final class AppState: ObservableObject {
 
     func removeAccount(_ account: Account) {
         log.info("[removeAccount] Removing account \(account.id)")
-        keychain.removeAccountBackup(forAccountId: account.id.uuidString)
+        switch account.provider {
+        case .codex:
+            Task { await CodexService.shared.removeStoredCredentials(forAccountId: account.id) }
+        case .claudeCode, .gemini:
+            keychain.removeAccountBackup(forAccountId: account.id.uuidString)
+        }
         accounts.removeAll { $0.id == account.id }
+        scrubFromProfiles(account.id)
         // Drop every per-account cache too, or a re-added account inherits the
         // removed one's readings, error banner and rate-limit park.
         accountUsage[account.id] = nil
         accountUsageSampledAt[account.id] = nil
         accountUsageErrors[account.id] = nil
         usageRetryNotBefore[account.id] = nil
-        if account.isActive, let first = accounts.first {
-            accounts[accounts.startIndex].isActive = true
-            activeAccount = accounts.first
+        codexUsage[account.id] = nil
+        codexUsageSampledAt[account.id] = nil
+        codexUsageErrors[account.id] = nil
+        if account.provider == .codex {
+            // The removed login may still sit in auth.json; with no live
+            // account recorded, switchTo(_:) skips re-capturing it into a
+            // backup we just deleted.
+            if account.isActive {
+                activeCodexAccount = nil
+                if let next = profileAccounts(for: .codex).first ?? accounts(for: .codex).first {
+                    log.info("[removeAccount] Removed live Codex account, switching to next remaining")
+                    Task { await switchTo(next) }
+                }
+            }
+        } else if account.isActive, let first = accounts.first(where: { $0.provider == account.provider }) {
+            let firstIndex = accounts.firstIndex(where: { $0.id == first.id })!
+            accounts[firstIndex].isActive = true
+            activeAccount = accounts[firstIndex]
             log.info("[removeAccount] Removed active account, switching to first remaining")
             Task { await switchTo(first) }
         }
@@ -427,9 +477,25 @@ final class AppState: ObservableObject {
     }
 
     func switchTo(_ account: Account) async {
+        _ = await performSwitch(account, refreshAfter: true)
+    }
+
+    /// Switch routed by provider. Returns true when `account` is live afterwards.
+    /// `refreshAfter: false` lets `activateProfile` switch two providers and
+    /// refresh once. On failure `errorMessage` is set (except for no-op paths).
+    func performSwitch(_ account: Account, refreshAfter: Bool) async -> Bool {
+        switch account.provider {
+        case .codex:
+            return await switchCodex(to: account, refreshAfter: refreshAfter)
+        case .claudeCode, .gemini:
+            return await switchClaude(to: account, refreshAfter: refreshAfter)
+        }
+    }
+
+    private func switchClaude(to account: Account, refreshAfter: Bool) async -> Bool {
         guard let currentActive = activeAccount, currentActive.id != account.id else {
             log.info("[switchTo] No switch needed (same account or no active account)")
-            return
+            return activeAccount?.id == account.id
         }
 
         log.info("[switchTo] ===== Switching from \(currentActive.email) to \(account.email) =====")
@@ -437,9 +503,9 @@ final class AppState: ObservableObject {
         // One credential mutation at a time: a switch already in flight (its
         // awaits leave the main actor free) or a running login must finish
         // before another switch may touch the keychain and ~/.claude.json.
-        guard !isSwitching, !isLoggingIn else {
+        guard !isSwitching, !isLoggingIn, !isLoggingInCodex else {
             log.warning("[switchTo] Skipped: another switch or a login is in progress")
-            return
+            return false
         }
         isSwitching = true
         defer { isSwitching = false }
@@ -457,11 +523,11 @@ final class AppState: ObservableObject {
         case .missing:
             log.error("[switchTo] ABORT: no backup for target account")
             errorMessage = String(localized: "No stored credentials for \(account.email). Use re-authenticate to fix.", bundle: L10n.bundle)
-            return
+            return false
         case .storeUnavailable:
             log.error("[switchTo] ABORT: backup store unreadable right now")
             errorMessage = String(localized: "Credential storage is temporarily unavailable. Try again shortly.", bundle: L10n.bundle)
-            return
+            return false
         }
 
         // Any switch, deliberate or automatic, restarts the auto-switch cooldown:
@@ -473,7 +539,8 @@ final class AppState: ObservableObject {
         do {
             let outcome = try await claudeService.switchAccount(from: currentActive, to: account, targetBackup: targetBackup)
 
-            for i in accounts.indices {
+            // Only Claude accounts: a Codex account stays live independently.
+            for i in accounts.indices where accounts[i].provider == account.provider {
                 accounts[i].isActive = (accounts[i].id == account.id)
                 if accounts[i].id == account.id {
                     accounts[i].lastUsed = Date()
@@ -481,18 +548,70 @@ final class AppState: ObservableObject {
             }
             activeAccount = account
             saveAccounts()
+            recordLastActive(account)
 
-            await refresh()
+            if refreshAfter {
+                await refresh()
+            }
             // `refresh()` clears errorMessage, so surface the warning afterwards.
             if let shadowedBy = outcome.shadowedBy {
                 errorMessage = String(localized: "Switched to \(account.email), but the Claude CLI is authenticating via \(shadowedBy) instead of the stored login, so it will not use this account.", bundle: L10n.bundle)
             }
             log.info("[switchTo] ===== Switch completed =====")
+            return true
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
             log.error("[switchTo] Switch failed: \(error.localizedDescription)")
+            return false
         }
+    }
+
+    /// Codex switch: swaps `~/.codex/auth.json`. A nil live account (none yet,
+    /// or just removed) is allowed — there is simply nothing to re-capture.
+    private func switchCodex(to account: Account, refreshAfter: Bool) async -> Bool {
+        if activeCodexAccount?.id == account.id {
+            log.info("[switchCodex] No switch needed (already live)")
+            return true
+        }
+        guard !isSwitching, !isLoggingIn, !isLoggingInCodex else {
+            log.warning("[switchCodex] Skipped: another switch or a login is in progress")
+            return false
+        }
+        isSwitching = true
+        defer { isSwitching = false }
+
+        let currentId = activeCodexAccount?.id
+        log.info("[switchCodex] ===== Switching Codex to \(account.id) =====")
+        isLoading = true
+        switch await codexResult(try await CodexService.shared.switchAccount(to: account.id, from: currentId)) {
+        case .failure(let error):
+            // .unmanagedLogin included: state stays untouched, the views offer
+            // the deep link to Codex settings.
+            errorMessage = error.localizedDescription
+            isLoading = false
+            log.error("[switchCodex] Switch failed: \(error.localizedDescription)")
+            return false
+        case .success:
+            break
+        }
+
+        for i in accounts.indices where accounts[i].provider == .codex {
+            accounts[i].isActive = (accounts[i].id == account.id)
+            if accounts[i].id == account.id {
+                accounts[i].lastUsed = Date()
+            }
+        }
+        activeCodexAccount = accounts.first { $0.id == account.id }
+        saveAccounts()
+        recordLastActive(account)
+        runningCodexSessions = await CodexService.shared.runningCodexProcessCount()
+
+        if refreshAfter {
+            await refresh()
+        }
+        log.info("[switchCodex] ===== Switch completed =====")
+        return true
     }
 
     // MARK: - Auto-switch
@@ -519,7 +638,7 @@ final class AppState: ObservableObject {
     /// burst the round-robin exists to prevent.
     private func evaluateAutoSwitch() async {
         guard autoSwitchEnabled, !isEvaluatingAutoSwitch else { return }
-        guard !isLoggingIn, !isSwitching, let active = activeAccount else { return }
+        guard !isLoggingIn, !isLoggingInCodex, !isSwitching, !isSwitchingProfile, let active = activeAccount else { return }
         // An opted-out account is never left automatically either: the user
         // chose to be on it deliberately (e.g. a work account).
         guard !active.isExcludedFromAutoSwitch else { return }
@@ -529,9 +648,10 @@ final class AppState: ObservableObject {
             return
         }
 
-        // Only consider same-provider accounts (a Claude switch never touches Codex/Gemini).
-        let candidates = accounts.filter {
-            $0.provider == active.provider && $0.id != active.id && !$0.isExcludedFromAutoSwitch
+        // Only consider same-provider accounts (a Claude switch never touches
+        // Codex/Gemini), restricted to the active profile's members when one is set.
+        let candidates = profileAccounts(for: active.provider).filter {
+            $0.id != active.id && !$0.isExcludedFromAutoSwitch
         }
         let activeSampledThisCycle = (accountUsageSampledAt[active.id] ?? .distantPast) >= lastCycleStart
         let ranked = AutoSwitchEngine.rankedTargets(
@@ -654,7 +774,7 @@ final class AppState: ObservableObject {
         }
         // One credential mutation at a time — see loginNewAccount for why a
         // login during a suspended switch destroys a backup.
-        guard !isSwitching, !isLoggingIn else {
+        guard !isSwitching, !isLoggingIn, !isLoggingInCodex else {
             log.warning("[reauth] Skipped: a switch or another login is in progress")
             return
         }
@@ -708,7 +828,7 @@ final class AppState: ObservableObject {
                 accounts[index].subscriptionType = status.subscriptionType
 
                 // Mark this account as active (it's what the CLI is now using)
-                for i in accounts.indices {
+                for i in accounts.indices where accounts[i].provider == .claudeCode {
                     accounts[i].isActive = (i == index)
                 }
                 activeAccount = accounts[index]
@@ -859,7 +979,7 @@ final class AppState: ObservableObject {
         // account in round-robin order. Stale samples for the others are kept.
         // Accounts parked by a server-given Retry-After deadline are skipped.
         let now = Date()
-        let eligible = accounts.filter { (usageRetryNotBefore[$0.id] ?? .distantPast) <= now }
+        let eligible = accounts.filter { $0.provider == .claudeCode && (usageRetryNotBefore[$0.id] ?? .distantPast) <= now }
         let others = eligible.filter { !$0.isActive }
         var targets = eligible.filter { $0.isActive }
         if !others.isEmpty {
@@ -993,10 +1113,11 @@ final class AppState: ObservableObject {
 
     /// Passive health check — verifies backup existence and identity consistency.
     private func diagnoseTokenHealth() {
-        guard !accounts.isEmpty else { return }
+        let claudeAccounts = accounts(for: .claudeCode)
+        guard !claudeAccounts.isEmpty else { return }
 
         log.info("[diagnose] === Health Check ===")
-        log.info("[diagnose] Accounts: \(self.accounts.count), active: \(self.activeAccount?.email ?? "none")")
+        log.info("[diagnose] Accounts: \(claudeAccounts.count), active: \(self.activeAccount?.email ?? "none")")
 
         // Check live oauthAccount identity
         if let liveOAuth = keychain.readOAuthAccount() {
@@ -1007,7 +1128,7 @@ final class AppState: ObservableObject {
         }
 
         // Check each account has a backup
-        for account in accounts {
+        for account in claudeAccounts {
             if let backup = keychain.getAccountBackup(forAccountId: account.id.uuidString) {
                 let backupEmail = (backup.oauthAccount["emailAddress"]?.value as? String) ?? "?"
                 log.info("[diagnose] Backup [\(account.email)]: OK (email=\(backupEmail))")
@@ -1022,7 +1143,7 @@ final class AppState: ObservableObject {
     // MARK: - Widget
 
     private func updateWidgetData() {
-        let widgetAccounts = accounts.map { account in
+        let widgetAccounts = accounts(for: .claudeCode).map { account in
             let usage = accountUsage[account.id]
             let error = accountUsageErrors[account.id]
             return WidgetAccountData(
@@ -1063,11 +1184,12 @@ final class AppState: ObservableObject {
             return
         }
         accounts = decoded
-        activeAccount = accounts.first(where: \.isActive)
+        activeAccount = accounts.first { $0.isActive && $0.provider == .claudeCode }
+        activeCodexAccount = accounts.first { $0.isActive && $0.provider == .codex }
         log.info("[loadAccounts] Loaded \(decoded.count) accounts")
     }
 
-    private func saveAccounts(refreshWidget: Bool = false) {
+    func saveAccounts(refreshWidget: Bool = false) {
         if let data = try? JSONEncoder().encode(accounts) {
             UserDefaults.standard.set(data, forKey: accountsKey)
             log.debug("[saveAccounts] Saved \(self.accounts.count) accounts to UserDefaults")
@@ -1080,8 +1202,9 @@ final class AppState: ObservableObject {
     private func updateActiveAccount(from status: AuthStatus) {
         guard status.loggedIn, let email = status.email else { return }
 
-        if let index = accounts.firstIndex(where: { $0.email == email }) {
-            for i in accounts.indices {
+        // Match Claude accounts only: a Codex account may share the email.
+        if let index = accounts.firstIndex(where: { $0.provider == .claudeCode && $0.email == email }) {
+            for i in accounts.indices where accounts[i].provider == .claudeCode {
                 accounts[i].isActive = (i == index)
             }
             accounts[index].orgName = status.orgName
@@ -1089,7 +1212,7 @@ final class AppState: ObservableObject {
             activeAccount = accounts[index]
             saveAccounts()
             log.info("[updateActiveAccount] Matched existing account at index \(index)")
-        } else if accounts.isEmpty {
+        } else if !accounts.contains(where: { $0.provider == .claudeCode }) {
             let account = Account(
                 email: email,
                 displayName: status.orgName ?? email,
@@ -1100,11 +1223,175 @@ final class AppState: ObservableObject {
             )
             accounts.append(account)
             activeAccount = account
+            joinActiveProfile(account)
             _ = claudeService.captureCurrentCredentials(forAccountId: account.id.uuidString)
             saveAccounts()
             log.info("[updateActiveAccount] Auto-created first account, id=\(account.id)")
         } else {
             log.info("[updateActiveAccount] Logged-in account not in our list (might be new)")
+        }
+    }
+
+    // MARK: - Codex
+
+    /// Run a typed-throwing Codex call as a `Result`, so call sites can switch
+    /// on `CodexServiceError` without `do throws(...)` ceremony.
+    func codexResult<T>(_ body: @autoclosure () async throws(CodexServiceError) -> T) async -> Result<T, CodexServiceError> {
+        do throws(CodexServiceError) {
+            return .success(try await body())
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /// Mirror an account into the published live-account slot of its provider.
+    func setLive(_ account: Account) {
+        switch account.provider {
+        case .claudeCode: activeAccount = account
+        case .codex: activeCodexAccount = account
+        case .gemini: break
+        }
+    }
+
+    /// Codex half of a refresh cycle. Never throws and never touches Claude
+    /// state: a missing/broken Codex install only shows up as per-account errors.
+    private func refreshCodex() async {
+        let service = CodexService.shared
+        codexAvailable = await service.codexBinaryPath() != nil
+        runningCodexSessions = await service.runningCodexProcessCount()
+
+        let codexAccounts = accounts(for: .codex)
+        guard !codexAccounts.isEmpty else { return }
+
+        await syncLiveCodexAccount()
+
+        // Same scheme as Claude: live account every cycle + one other round-robin,
+        // skipping accounts parked by a server-given Retry-After.
+        let now = Date()
+        let eligible = accounts(for: .codex).filter { (usageRetryNotBefore[$0.id] ?? .distantPast) <= now }
+        let others = eligible.filter { !$0.isActive }
+        var targets = eligible.filter { $0.isActive }
+        if !others.isEmpty {
+            targets.append(others[codexFetchCursor % others.count])
+            codexFetchCursor += 1
+        }
+        for target in targets {
+            codexUsageErrors[target.id] = nil
+        }
+
+        var isFirstRequest = true
+        for account in targets {
+            if !isFirstRequest {
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+            }
+            isFirstRequest = false
+
+            // A switch may have run during the sleep: judge liveness now, not
+            // from the snapshot taken before the loop.
+            guard !isSwitching else {
+                log.info("[codexUsage] Switch started mid-refresh; skipping remaining fetches")
+                break
+            }
+            let isLive = activeCodexAccount?.id == account.id
+
+            switch await codexResult(try await service.fetchUsage(forAccountId: account.id, isLive: isLive)) {
+            case .success(let usage):
+                codexUsage[account.id] = usage
+                codexUsageSampledAt[account.id] = Date()
+                codexUsageErrors[account.id] = nil
+                log.info("[codexUsage] \(account.id): primary=\(usage.primary?.usedPercent ?? -1)%, secondary=\(usage.secondary?.usedPercent ?? -1)%")
+            case .failure(let error):
+                handleCodexUsageError(error, for: account, isLive: isLive)
+            }
+        }
+    }
+
+    private func handleCodexUsageError(_ error: CodexServiceError, for account: Account, isLive: Bool) {
+        switch error {
+        case .notImplemented, .notInstalled:
+            // Nothing to show: the CLI is simply not usable here.
+            log.info("[codexUsage] \(account.id): skipped (\(error.localizedDescription))")
+        case .rateLimited(let retryAfter):
+            // Keep the last sample; only surface a banner when there is none.
+            park(account, retryAfter: retryAfter)
+            if codexUsage[account.id] == nil {
+                codexUsageErrors[account.id] = UsageErrorState(isExpired: false, isRateLimited: true, message: String(localized: "API Rate Limited. Try again later.", bundle: L10n.bundle))
+            }
+        case .unauthorized where isLive:
+            // The CLI rotates the live login itself; keep the stale sample and
+            // wait for it instead of flagging the account expired.
+            log.info("[codexUsage] \(account.id): live account unauthorized, waiting for the CLI to refresh")
+            codexUsageErrors[account.id] = UsageErrorState(isExpired: false, isRateLimited: false, message: String(localized: "Waiting for the Codex CLI to refresh its session", bundle: L10n.bundle))
+        case .unauthorized, .notLoggedIn, .noStoredCredentials:
+            log.warning("[codexUsage] \(account.id): \(error.localizedDescription)")
+            codexUsage[account.id] = nil
+            codexUsageSampledAt[account.id] = nil
+            codexUsageErrors[account.id] = UsageErrorState(isExpired: true, isRateLimited: false, message: error.localizedDescription)
+        default:
+            // Transient (store, network, HTTP): keep the stale sample, show why.
+            log.warning("[codexUsage] \(account.id): \(error.localizedDescription)")
+            codexUsageErrors[account.id] = UsageErrorState(isExpired: false, isRateLimited: false, message: error.localizedDescription)
+        }
+    }
+
+    /// The user may switch Codex login from the CLI. When auth.json now holds
+    /// a login that matches a stored account, follow it; otherwise leave the
+    /// recorded live account alone (an unknown login is not ours to guess at).
+    private func syncLiveCodexAccount() async {
+        guard !isSwitching, !isLoggingInCodex else { return }
+        guard case .success(.some(let identity)) = await codexResult(try await CodexService.shared.readCurrentIdentity()),
+              !identity.isApiKey,
+              let index = accounts.firstIndex(where: { $0.provider == .codex && $0.providerAccountId == identity.providerKey }) else { return }
+        // The await above left the main actor free: a switch or login may have
+        // started meanwhile, and `index` may be stale.
+        guard !isSwitching, !isLoggingInCodex,
+              accounts.indices.contains(index),
+              accounts[index].provider == .codex,
+              accounts[index].providerAccountId == identity.providerKey else { return }
+
+        if accounts[index].isActive {
+            // Same login still live: the CLI rotates tokens in auth.json, so
+            // keep our backup current.
+            let id = accounts[index].id
+            switch await codexResult(try await CodexService.shared.refreshLiveBackupIfChanged(forAccountId: id)) {
+            case .success(let changed):
+                if changed { log.info("[syncLiveCodex] Backup refreshed for live account \(id)") }
+            case .failure(let error):
+                log.warning("[syncLiveCodex] Backup refresh failed for \(id): \(error.localizedDescription)")
+            }
+            return
+        }
+        for i in accounts.indices where accounts[i].provider == .codex {
+            accounts[i].isActive = (i == index)
+        }
+        activeCodexAccount = accounts[index]
+        saveAccounts()
+        log.info("[syncLiveCodex] auth.json now matches stored account \(accounts[index].id); marked live")
+    }
+
+    // MARK: - Profile persistence
+
+    private func loadProfiles() {
+        if let data = UserDefaults.standard.data(forKey: profilesKey),
+           let decoded = try? JSONDecoder().decode([Profile].self, from: data) {
+            profiles = decoded
+        }
+        if let raw = UserDefaults.standard.string(forKey: activeProfileIdKey),
+           let id = UUID(uuidString: raw),
+           profiles.contains(where: { $0.id == id }) {
+            activeProfileId = id
+        }
+        log.info("[loadProfiles] Loaded \(self.profiles.count) profiles, active: \(self.activeProfileId?.uuidString ?? "none")")
+    }
+
+    func saveProfiles() {
+        if let data = try? JSONEncoder().encode(profiles) {
+            UserDefaults.standard.set(data, forKey: profilesKey)
+        }
+        if let activeProfileId {
+            UserDefaults.standard.set(activeProfileId.uuidString, forKey: activeProfileIdKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: activeProfileIdKey)
         }
     }
 }

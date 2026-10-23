@@ -12,31 +12,59 @@ struct SettingsView: View {
     @AppStorage("appLanguage") private var appLanguage = "auto"
     @AppStorage("autoSwitchEnabled") private var autoSwitchEnabled = false
     @AppStorage("autoSwitchThreshold") private var autoSwitchThreshold = 90.0
+    /// Selected tab id; the popover deep-links by writing "profiles" or "codex".
+    @AppStorage("settingsSection") private var settingsSection = "general"
     @State private var launchAtLogin = false
 
+    private static let sectionIds = ["general", "profiles", "menuBar", "claudeCLI", "codex", "about"]
+
+    /// Unknown stored values fall back to the first tab.
+    private var selectedSection: Binding<String> {
+        Binding(
+            get: { Self.sectionIds.contains(settingsSection) ? settingsSection : "general" },
+            set: { settingsSection = $0 }
+        )
+    }
+
     var body: some View {
-        TabView {
+        TabView(selection: selectedSection) {
             generalTab
                 .tabItem {
                     Label("General", systemImage: "gear")
                 }
+                .tag("general")
+
+            ProfilesSettingsView()
+                .tabItem {
+                    Label("Profiles", systemImage: "person.2.crop.square.stack")
+                }
+                .tag("profiles")
 
             menuBarTab
                 .tabItem {
                     Label("Menu Bar", systemImage: "menubar.rectangle")
                 }
+                .tag("menuBar")
 
             ClaudeCLITabView()
                 .tabItem {
                     Label("Claude CLI", systemImage: "terminal")
                 }
+                .tag("claudeCLI")
+
+            CodexSettingsView()
+                .tabItem {
+                    Label("Codex", systemImage: "chevron.left.forwardslash.chevron.right")
+                }
+                .tag("codex")
 
             aboutTab
                 .tabItem {
                     Label("About", systemImage: "info.circle")
                 }
+                .tag("about")
         }
-        .frame(width: 520, height: 440)
+        .frame(width: 600, height: 480)
         .onAppear {
             launchAtLogin = SMAppService.mainApp.status == .enabled
         }
@@ -78,9 +106,9 @@ struct SettingsView: View {
                 }
             }
 
-            if autoSwitchEnabled && !appState.accounts.isEmpty {
+            if autoSwitchEnabled && !appState.accounts(for: .claudeCode).isEmpty {
                 Section {
-                    ForEach(appState.accounts) { account in
+                    ForEach(appState.accounts(for: .claudeCode)) { account in
                         Toggle(isOn: autoSwitchInclusion(for: account)) {
                             Text(account.effectiveDisplayName(obfuscated: !showFullEmail))
                             Text(account.displayEmail(obfuscated: !showFullEmail))
