@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Switch Claude Code and Codex accounts on Mac — Tagteam</title>
+<meta name="description" content="Tagteam is a free macOS menu-bar app that switches your Claude Code and Codex accounts in one click, grouped into profiles. Notarized, macOS 14 or later.">
+<link rel="canonical" href="https://tagteam.simonefolador.com/">
+<meta name="theme-color" content="#f6f0e4">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tagteam">
+<meta property="og:title" content="Tagteam — Switch Claude Code and Codex accounts from the menu bar">
+<meta property="og:description" content="When one account hits its limit, tag in a fresh one. Claude Code and Codex accounts, grouped into profiles, on macOS.">
+<meta property="og:url" content="https://tagteam.simonefolador.com/">
+<meta property="og:image" content="https://tagteam.simonefolador.com/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tagteam: switch Claude Code and Codex accounts from the macOS menu bar">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tagteam — Switch Claude Code and Codex accounts from the menu bar">
+<meta name="twitter:description" content="When one account hits its limit, tag in a fresh one. Profiles for Claude Code and Codex on macOS.">
+<meta name="twitter:image" content="https://tagteam.simonefolador.com/social-card.png">
+<meta name="twitter:image:alt" content="Tagteam: switch Claude Code and Codex accounts from the macOS menu bar">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/icon-64.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/fraunces-latin-v38.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/figtree-latin-v9.woff2" as="font" type="font/woff2" crossorigin>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": "https://tagteam.simonefolador.com/#app",
+  "name": "Tagteam",
+  "url": "https://tagteam.simonefolador.com/",
+  "description": "A macOS menu-bar app that switches Claude Code and Codex accounts, grouped into profiles.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS 14 or later",
+  "softwareRequirements": "Claude Code CLI and/or Codex CLI",
+  "isAccessibleForFree": true,
+  "downloadUrl": "https://tagteam.simonefolador.com/download/Tagteam.zip",
+  "image": "https://tagteam.simonefolador.com/icon-512.png",
+  "author": {
+    "@type": "Person",
+    "name": "Simone Folador",
+    "url": "https://simonefolador.com/"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": 0,
+    "priceCurrency": "EUR"
+  }
+}
+</script>
+<style>
+  /* Self-hosted latin subsets (SIL Open Font License), so no third-party CSS blocks rendering. */
+  @font-face { font-family: "Fraunces"; font-style: normal; font-weight: 400 800; font-display: swap;
+    src: url("/fonts/fraunces-latin-v38.woff2") format("woff2"); }
+  @font-face { font-family: "Fraunces"; font-style: italic; font-weight: 400 800; font-display: swap;
+    src: url("/fonts/fraunces-italic-latin-v38.woff2") format("woff2"); }
+  @font-face { font-family: "Figtree"; font-style: normal; font-weight: 400 800; font-display: swap;
+    src: url("/fonts/figtree-latin-v9.woff2") format("woff2"); }
+  @font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 400 600; font-display: swap;
+    src: url("/fonts/geist-mono-latin-v6.woff2") format("woff2"); }
+
+  :root {
+    --ivory: #f6f0e4;
+    --ivory-2: #efe7d7;
+    --paper: #fffdf8;
+    --line: #ddd2bd;
+    --slate-950: #1c2833;
+    --slate-900: #26313c;
+    --slate-700: #475765;
+    --slate-500: #6a7885;
+    --orange: #e86d45;
+    --orange-deep: #b8431f;
+    --ink: #1f2933;
+    --muted: #55626e;
+    --radius: 18px;
+    --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --body: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color-scheme: light;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  code { font-family: var(--mono); font-size: .84em; background: rgba(38,49,60,.07); padding: 2px 6px; border-radius: 6px; overflow-wrap: anywhere; }
+  :focus-visible { outline: 3px solid var(--orange-deep); outline-offset: 3px; border-radius: 6px; }
+  .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--slate-900); color: var(--ivory); padding: 8px 14px; border-radius: 8px; z-index: 10; }
+  .skip:focus { left: 8px; }
+
+  /* ---------- Backdrop: two big soft tiles, one slate, one orange ---------- */
+  .backdrop { position: absolute; inset: 0 0 auto 0; height: 900px; overflow: hidden; pointer-events: none; z-index: 0; }
+  .backdrop i { position: absolute; border-radius: 22%; }
+  .backdrop .t1 { width: 560px; height: 560px; right: -140px; top: -150px; background: var(--slate-900); opacity: .06; transform: rotate(8deg); }
+  .backdrop .t2 { width: 460px; height: 460px; right: 120px; top: 120px; background: var(--orange); opacity: .10; transform: rotate(-8deg); }
+  .backdrop::after { content: ""; position: absolute; inset: auto 0 0 0; height: 260px; background: linear-gradient(to bottom, transparent, var(--ivory)); }
+
+  /* ---------- Nav ---------- */
+  header.nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding-block: 22px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -.01em; }
+  .brand img { width: 36px; height: 36px; }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .nav-link { font-size: 15px; font-weight: 600; text-decoration: none; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--slate-700); color: var(--slate-900); transition: background .2s, color .2s; }
+  .nav-link:hover { background: var(--slate-900); color: var(--ivory); }
+  .nav-link.plain { border-color: transparent; }
+  .nav-link.plain:hover { background: rgba(38,49,60,.08); color: var(--slate-900); }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; z-index: 1; display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; padding: 64px 0 112px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-deep); display: inline-flex; align-items: center; gap: 10px; }
+  .eyebrow::before { content: ""; width: 26px; height: 1px; background: currentColor; }
+  h1 { font-family: var(--display); font-size: clamp(42px, 6vw, 76px); line-height: 1; letter-spacing: -.012em; word-spacing: .06em; font-weight: 700; margin: 18px 0 22px; font-variation-settings: "opsz" 96; }
+  h1 em { font-style: italic; font-weight: 500; color: var(--orange-deep); }
+  .lede { font-size: 19px; color: var(--muted); max-width: 34em; margin: 0 0 32px; }
+  .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+  .btn-download { display: inline-flex; align-items: center; gap: 12px; padding: 16px 26px 16px 22px; border-radius: 16px; background: var(--orange); color: var(--slate-950); font-weight: 800; font-size: 18px; text-decoration: none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 14px 34px -12px rgba(184,67,31,.7); transition: transform .15s ease, box-shadow .2s ease, background .2s; }
+  .btn-download:hover { transform: translateY(-1px); background: #ee7b54; box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 18px 40px -12px rgba(184,67,31,.8); }
+  .btn-download:active { transform: translateY(1px) scale(.99); }
+  .btn-download svg { width: 22px; height: 22px; flex: none; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 9px; padding: 15px 22px; border-radius: 16px; border: 1.5px solid var(--slate-700); color: var(--slate-900); font-weight: 700; font-size: 17px; text-decoration: none; transition: background .2s, color .2s; }
+  .btn-ghost:hover { background: var(--slate-900); color: var(--ivory); }
+  .btn-ghost svg { width: 20px; height: 20px; }
+  .meta { font-family: var(--mono); font-size: 12.5px; color: var(--muted); line-height: 1.7; margin-top: 22px; }
+  .meta strong { color: var(--ink); font-weight: 600; }
+  .meta a { text-underline-offset: 3px; }
+
+  /* Hero art: the app icon, with the real popover screenshot swapped in once it exists. */
+  .art { position: relative; display: grid; place-items: center; min-height: 440px; }
+  .art img.icon { position: relative; width: 360px; height: 360px; max-width: 80%; height: auto; filter: drop-shadow(0 30px 40px rgba(28,40,51,.28)); }
+  .art img.shot { position: relative; display: block; width: 100%; max-width: 480px; height: auto; border-radius: 16px; box-shadow: 0 40px 100px -30px rgba(28,40,51,.55), 0 0 0 1px rgba(28,40,51,.12); }
+  .art.has-shot img.icon { display: none; }
+
+  /* ---------- Sections ---------- */
+  section { position: relative; z-index: 1; }
+  .section-head { margin-bottom: 36px; max-width: 34em; }
+  .section-head .num { font-family: var(--mono); color: var(--orange-deep); font-size: 13px; letter-spacing: .06em; }
+  h2 { font-family: var(--display); font-size: clamp(30px, 4vw, 46px); letter-spacing: -.01em; line-height: 1.08; margin: 6px 0 0; font-weight: 700; }
+  .section-head p { color: var(--muted); margin: 14px 0 0; }
+
+  .features { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 120px; }
+  .feature { grid-column: span 2; padding: 28px; border-radius: var(--radius); background: var(--paper); border: 1px solid var(--line); box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 18px 40px -30px rgba(28,40,51,.35); }
+  .feature.wide { grid-column: span 3; }
+  .feature h3 { font-family: var(--display); font-size: 22px; letter-spacing: -.015em; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  .feature h3 svg { width: 22px; height: 22px; color: var(--orange-deep); flex: none; }
+  .feature p { margin: 0; color: var(--muted); font-size: 16px; }
+
+  /* Slate band for the mechanism */
+  .band { background: var(--slate-900); color: #e9e4d8; padding: 88px 0 96px; margin-bottom: 120px; position: relative; z-index: 1; }
+  .band .section-head .num { color: #f08760; }
+  .band .section-head p { color: #b9c2cb; }
+  .band code { background: rgba(255,255,255,.09); color: #f6f0e4; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .col { padding: 30px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); }
+  .col h3 { font-family: var(--display); font-size: 24px; margin: 0 0 14px; font-weight: 700; }
+  .col ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: #cfd6dc; font-size: 16px; }
+  .col li::marker { color: #f08760; }
+
+  /* Install */
+  .steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); counter-reset: s; }
+  .steps li { padding: 26px 26px 8px 0; counter-increment: s; }
+  .steps li + li { padding-left: 26px; border-left: 1px solid var(--line); }
+  .steps li::before { content: "0" counter(s); font-family: var(--mono); font-size: 13px; color: var(--orange-deep); }
+  .steps h3 { font-family: var(--display); font-size: 22px; margin: 8px 0 6px; font-weight: 700; }
+  .steps p { margin: 0; color: var(--muted); }
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 120px; }
+  .note { padding: 24px 26px; border-radius: var(--radius); background: var(--ivory-2); border: 1px solid var(--line); }
+  .note h3 { font-family: var(--display); font-size: 20px; margin: 0 0 6px; font-weight: 700; }
+  .note p { margin: 0; color: var(--muted); font-size: 16px; }
+
+  /* FAQ */
+  .faq { max-width: 820px; margin-bottom: 120px; border-top: 1px solid var(--line); }
+  .faq details { border-bottom: 1px solid var(--line); }
+  .faq summary { cursor: pointer; list-style: none; padding: 22px 36px 22px 0; position: relative; font-family: var(--display); font-weight: 600; font-size: 21px; letter-spacing: -.01em; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 22px; color: var(--orange-deep); transition: transform .2s; }
+  .faq details[open] summary::after { content: "–"; }
+  .faq .answer { padding: 0 0 24px; color: var(--muted); }
+  .faq .answer p { margin: 0 0 10px; }
+  .faq .answer p:last-child { margin: 0; }
+
+  .closing { text-align: center; padding: 80px 24px 84px; border-radius: 28px; margin-bottom: 64px; color: #e9e4d8;
+    background: radial-gradient(60% 120% at 50% 115%, rgba(232,109,69,.55), transparent 70%), var(--slate-900); }
+  .closing img { width: 96px; height: 96px; margin-bottom: 18px; }
+  .closing h2 { margin-bottom: 14px; }
+  .closing p { color: #c4ccd3; margin: 0 auto 30px; max-width: 30em; }
+  .closing .cta-row { justify-content: center; }
+  .closing .meta { color: #b9c2cb; text-align: left; margin-top: 0; }
+  .closing .meta strong { color: #f6f0e4; }
+  .closing .btn-ghost { border-color: rgba(255,255,255,.4); color: #f6f0e4; }
+  .closing .btn-ghost:hover { background: #f6f0e4; color: var(--slate-900); }
+  .support { margin: 48px auto 0; padding-top: 32px; max-width: 34em; border-top: 1px solid rgba(255,255,255,.14); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .closing .support p { margin: 0; font-size: 15px; }
+  .btn-support { display: inline-flex; align-items: center; gap: 9px; padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(240,135,96,.7); color: #f6f0e4; font-weight: 600; font-size: 15px; text-decoration: none; transition: background .2s; }
+  .btn-support:hover { background: rgba(240,135,96,.16); }
+  .btn-support svg { width: 19px; height: 19px; color: #f08760; }
+
+  footer { border-top: 1px solid var(--line); padding: 28px 0 44px; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; }
+  footer a { text-decoration-color: rgba(85,98,110,.5); text-underline-offset: 3px; }
+  footer a:hover { color: var(--ink); }
+  footer .also { flex-basis: 100%; }
+
+  /* ---------- Load sequence ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    .rise { opacity: 0; transform: translateY(14px); animation: rise .8s cubic-bezier(.2,.7,.2,1) forwards; }
+    .rise.d1 { animation-delay: .08s; } .rise.d2 { animation-delay: .16s; } .rise.d3 { animation-delay: .26s; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+    .art img.icon { animation: settle 1s cubic-bezier(.2,.7,.2,1) .2s both; }
+    @keyframes settle { from { transform: translateY(18px) rotate(-4deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 920px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding: 36px 0 88px; }
+    .art { min-height: 380px; }
+    .features { grid-template-columns: 1fr 1fr; }
+    .feature, .feature.wide { grid-column: span 1; }
+    .cols, .notes { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 680px) {
+    body { font-size: 16px; }
+    .lede { font-size: 17px; }
+    .features { grid-template-columns: 1fr; margin-bottom: 88px; }
+    .steps { grid-template-columns: 1fr; }
+    .steps li, .steps li + li { padding: 22px 0; border-left: 0; border-bottom: 1px solid var(--line); }
+    .nav-link.plain { display: none; }
+    .art { min-height: 340px; }
+    .art img.icon { max-width: 260px; }
+    .band { padding: 64px 0 72px; margin-bottom: 88px; }
+    .col { padding: 24px; }
+    .notes, .faq { margin-bottom: 88px; }
+    .closing { padding: 56px 18px 64px; }
+    .faq summary { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="backdrop" aria-hidden="true"><i class="t1"></i><i class="t2"></i></div>
+
+<div class="wrap">
+  <header class="nav">
+    <a class="brand" href="/"><img src="/icon-64.png" alt="" width="36" height="36">Tagteam</a>
+    <nav class="nav-right" aria-label="Primary">
+      <a class="nav-link plain" href="https://github.com/sfolador/Tagteam" rel="noopener">GitHub</a>
+      <a class="nav-link" href="/download/Tagteam.zip" data-download>Download</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div>
+        <span class="eyebrow rise d1">Free macOS menu-bar app</span>
+        <h1 class="rise d1">Hit a limit? <em>Tag in</em> a fresh account.</h1>
+        <p class="lede rise d2">
+          Tagteam switches your <strong>Claude Code</strong> and <strong>Codex</strong> accounts from the menu bar, grouped into profiles like Personal and Work.
+          It keeps a backup of every account you add and swaps it in with one click: no logout, no browser login, no terminal.
+        </p>
+        <div class="cta-row rise d3">
+          <a class="btn-download" href="/download/Tagteam.zip" data-download>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.62c-.02-2.3 1.88-3.4 1.97-3.46-1.07-1.57-2.74-1.78-3.33-1.8-1.42-.14-2.77.83-3.49.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.59-.75 2.99-.75 1.4 0 1.79.75 3.01.72 1.24-.02 2.03-1.13 2.79-2.25.88-1.29 1.24-2.53 1.26-2.6-.03-.01-2.42-.93-2.45-3.68zM14.08 5.87c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.11 1.78-.97 2.83 1.03.08 2.07-.52 2.71-1.29z"/></svg>
+            Download for Mac
+          </a>
+          <a class="btn-ghost" href="https://github.com/sfolador/Tagteam" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+        <div class="meta rise d3">
+          Free · <span data-version>Version 2.0.0</span> · macOS 14+<br>
+          <strong>Notarized by Apple</strong> · <a href="https://github.com/sfolador/Tagteam/releases/tag/v2.0.0" rel="noopener">Release notes</a>
+        </div>
+      </div>
+
+      <div class="art rise d3" id="art">
+        <img class="icon" src="/icon-512.png" alt="Tagteam app icon: an orange tile sliding in front of a slate one" width="360" height="360">
+      </div>
+    </div>
+
+    <section aria-labelledby="features">
+      <div class="section-head">
+        <span class="num">01</span>
+        <h2 id="features">One bench for every account you use.</h2>
+      </div>
+      <div class="features">
+        <article class="feature wide">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="11" height="11" rx="3"/><rect x="10" y="9" width="11" height="11" rx="3"/></svg>Claude Code and Codex together</h3>
+          <p>Each account shows its 5-hour and weekly limits. The account in use sits at the top of its group; every other account has a <strong>Switch</strong> button and a ⋯ menu to rename, re-authenticate, exclude from auto-switch, manage profiles or remove.</p>
+        </article>
+        <article class="feature wide">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg>Profiles</h3>
+          <p>Group accounts into profiles such as <em>Personal</em> and <em>Work</em>. Picking a profile makes one Claude Code and one Codex account live at once, and limits the list and auto-switch to that profile. An account can belong to several profiles.</p>
+        </article>
+        <article class="feature">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>Auto-switch</h3>
+          <p>When the Claude Code account in use reaches your threshold (90% by default), Tagteam moves to the account in the profile with the most quota left. A 5-minute cooldown prevents bouncing, and you can opt individual accounts out.</p>
+        </article>
+        <article class="feature">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>Costs at a glance</h3>
+          <p>API-equivalent cost for today, 7 days and 30 days, plus the last 14 days, all computed from your local Claude Code logs.</p>
+        </article>
+        <article class="feature">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="6" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="14" y="13" width="7" height="8" rx="2"/></svg>Menu bar modules and widgets</h3>
+          <p>Choose what the menu bar shows (account, session or weekly usage, cost, reset countdowns) and add desktop widgets in three sizes.</p>
+        </article>
+        <article class="feature wide">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"/></svg>Private by default</h3>
+          <p>Emails are masked unless you choose to show them. Accounts are added through the browser login of the official CLIs, or by importing the login you already have, so there is no password to type into Tagteam.</p>
+        </article>
+        <article class="feature wide">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Native, and in your language</h3>
+          <p>Built with SwiftUI, with light and dark mode. Available in English, 简体中文, 日本語, Deutsch and Français. No made-up numbers: a missing reading shows “—”, never 0%.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+</div>
+
+<section class="band" aria-labelledby="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2 id="how">How switching works.</h2>
+      <p>Nothing is logged out, so you can switch back at any time.</p>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <h3>Claude Code</h3>
+        <ul>
+          <li>Every account you add is backed up: its OAuth token plus the matching <code>oauthAccount</code> block from <code>~/.claude.json</code>.</li>
+          <li>A switch writes the target account into the <code>Claude Code-credentials</code> keychain item and into <code>~/.claude.json</code>.</li>
+          <li>Expired access tokens are refreshed by the official CLI (<code>claude auth status</code>), not by calling Anthropic’s private OAuth endpoint.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Codex</h3>
+        <ul>
+          <li>A switch swaps <code>~/.codex/auth.json</code>, written atomically with mode <code>0600</code>. Each account’s file is kept in the keychain.</li>
+          <li>Before overwriting, Tagteam saves the current file into the backup of the account that owns it. If it holds a login Tagteam doesn’t manage, the switch stops instead of discarding it.</li>
+          <li>The Codex app-server and the ChatGPT (Codex) desktop app are closed gracefully, then reopened only if they were running.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <section aria-labelledby="install">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2 id="install">Install in a minute.</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Download</h3><p>Get <code>Tagteam.zip</code> from this page, or from the <a href="https://github.com/sfolador/Tagteam/releases/latest" rel="noopener">latest GitHub release</a>.</p></li>
+      <li><h3>Move to Applications</h3><p>Unzip it and drag <strong>Tagteam.app</strong> into <code>/Applications</code>.</p></li>
+      <li><h3>Open it</h3><p>Signed with a Developer ID and notarized by Apple, so it opens without Gatekeeper warnings.</p></li>
+    </ol>
+    <div class="notes">
+      <div class="note">
+        <h3>Upgrading from CCSwitcher</h3>
+        <p>Tagteam keeps the same bundle identifier, so your accounts, profiles and settings carry over. Quit CCSwitcher, install Tagteam, and delete the old app. On first launch macOS may ask once to allow keychain access, and the widget fills in after the first refresh.</p>
+      </div>
+      <div class="note">
+        <h3>Updates</h3>
+        <p>Automatic updates are removed. Install new versions from this page or the <a href="https://github.com/sfolador/Tagteam/releases" rel="noopener">Releases page</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="faq-title">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2 id="faq-title">Questions, answered.</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Is Tagteam notarized?</summary>
+        <div class="answer"><p>Yes. It is signed with a Developer ID and notarized by Apple, so it opens without Gatekeeper warnings. The first time it reads the Claude Code credentials, macOS asks for keychain access: choose <strong>Always Allow</strong>.</p></div>
+      </details>
+      <details>
+        <summary>Which CLIs do I need?</summary>
+        <div class="answer"><p>macOS 14 or later, plus the <a href="https://docs.claude.com/en/docs/claude-code" rel="noopener">Claude Code CLI</a> and/or the <a href="https://github.com/openai/codex" rel="noopener">Codex CLI</a>. Install the one you use, or both.</p></div>
+      </details>
+      <details>
+        <summary>Where are my credentials stored?</summary>
+        <div class="answer">
+          <p><strong>Claude Code:</strong> each account’s OAuth token and <code>oauthAccount</code> block are backed up, and the live account is the <code>Claude Code-credentials</code> keychain item plus <code>~/.claude.json</code>.</p>
+          <p><strong>Codex:</strong> the live login is <code>~/.codex/auth.json</code> (mode <code>0600</code>), and each account’s file is kept verbatim in the keychain item <code>CCSwitcher-codex-backups</code>.</p>
+          <p>Emails are masked in the app unless you choose to show them.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What happens to Codex sessions that are already running, or to ChatGPT.app?</summary>
+        <div class="answer">
+          <p>Recent Codex versions keep the login in memory, in the <code>codex app-server</code> daemon and in the ChatGPT (Codex) desktop app. On every switch Tagteam closes both gracefully, swaps the file, then starts them again, but only if they were running. You can turn this off in Settings → Codex.</p>
+          <p>Interactive <code>codex</code> sessions that are already open keep their account until you restart them; the popover shows how many are running.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Does Tagteam refresh my Codex tokens?</summary>
+        <div class="answer"><p>Not for the live account: refresh tokens are single-use and belong to the CLI. Only stored accounts are refreshed, and the new tokens are saved before use.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="get">
+    <img src="/icon-192.png" alt="Tagteam app icon" width="96" height="96" loading="lazy" decoding="async">
+    <h2 id="get">Download Tagteam for macOS.</h2>
+    <p>Unzip it, drop Tagteam into Applications, and add your first accounts.</p>
+    <div class="cta-row">
+      <a class="btn-download" href="/download/Tagteam.zip" data-download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>
+        Download Tagteam
+      </a>
+      <a class="btn-ghost" href="https://github.com/sfolador/Tagteam/releases/tag/v2.0.0" rel="noopener">GitHub release</a>
+      <div class="meta">Free · <span data-version>Version 2.0.0</span> · <span data-size>3.6 MB ZIP</span><br>macOS 14 Sonoma or later</div>
+    </div>
+    <div class="support">
+      <p>Tagteam is free and made by one developer. If it saves you a limit or two:</p>
+      <a class="btn-support" href="https://liberapay.com/sfolador/donate" rel="noopener">
+        <svg viewBox="0 0 80 80" fill="currentColor" aria-hidden="true"><g transform="translate(-78.37 -208.06)"><path d="m104.28 271.1c-3.571 0-6.373-.466-8.41-1.396-2.037-.93-3.495-2.199-4.375-3.809-.88-1.609-1.308-3.457-1.282-5.544.025-2.086.313-4.311.868-6.675l9.579-40.05 11.690-1.810-10.484 43.440c-.202.905-.314 1.735-.339 2.489-.026.754.113 1.421.415 1.999.302.579.817 1.044 1.546 1.395.729.353 1.747.579 3.055.679l-2.263 9.278"/><path d="m146.52 246.14c0 3.671-.604 7.030-1.811 10.070-1.207 3.043-2.879 5.669-5.010 7.881-2.138 2.213-4.702 3.935-7.693 5.167-2.992 1.231-6.248 1.848-9.767 1.848-1.710 0-3.420-.151-5.129-.453l-3.394 13.651h-11.162l12.520-52.190c2.010-.603 4.311-1.143 6.901-1.622 2.589-.477 5.393-.716 8.410-.716 2.815 0 5.242.428 7.278 1.282 2.037.855 3.708 2.024 5.020 3.507 1.307 1.484 2.274 3.219 2.904 5.205.627 1.987.942 4.110.942 6.373m-27.378 15.461c.854.202 1.910.302 3.167.302 1.961 0 3.746-.364 5.355-1.094 1.609-.728 2.979-1.747 4.111-3.055 1.131-1.307 2.010-2.877 2.640-4.714.628-1.835.943-3.858.943-6.071 0-2.161-.479-3.998-1.433-5.506-.956-1.508-2.615-2.263-4.978-2.263-1.610 0-3.118.151-4.525.453l-5.280 21.948"/></g></svg>
+        Support me on Liberapay
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 <a href="https://simonefolador.com">Simone Folador</a></span>
+    <span>Tagteam is an independent app, not affiliated with or endorsed by Anthropic or OpenAI.</span>
+    <span class="also">Credits: a fork of <a href="https://github.com/XueshiQiao/CCSwitcher" rel="noopener">CCSwitcher</a> by Xueshi Qiao; Codex support modelled on <a href="https://github.com/Lampese/codex-switcher" rel="noopener">Codex Switcher</a> by Lampese.</span>
+    <span class="also">Also by me: <a href="https://tunnelflares.simonefolador.com/">TunnelFlares</a>, a menu-bar app for Cloudflare Tunnels · <a href="https://notabene.simonefolador.com/">NotaBene</a>, instant notes saved as plain files · <a href="https://ssdsync.simonefolador.com/">SSDSync</a>, automatic folder sync to external SSDs</span>
+  </footer>
+</div>
+
+<script>
+  // Version and size come from download/latest.json, next to the zip.
+  fetch("/download/latest.json", { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((info) => {
+      if (!info) return;
+      document.querySelectorAll("[data-version]").forEach((el) => { el.textContent = "Version " + info.version; });
+      if (info.size) {
+        const mb = (info.size / 1048576).toFixed(1);
+        document.querySelectorAll("[data-size]").forEach((el) => { el.textContent = mb + " MB ZIP"; });
+      }
+    })
+    .catch(() => {});
+
+  // Swap the icon composition for a real popover screenshot once site/public/screenshot-popover.png exists.
+  (() => {
+    const probe = new Image();
+    probe.onload = () => {
+      const art = document.getElementById("art");
+      probe.className = "shot";
+      probe.alt = "The Tagteam popover: profiles across the top, Claude Code and Codex accounts with their limits";
+      probe.width = probe.naturalWidth; probe.height = probe.naturalHeight;
+      art.classList.add("has-shot");
+      art.appendChild(probe);
+    };
+    probe.src = "/screenshot-popover.png";
+  })();
+</script>
+</body>
+</html>

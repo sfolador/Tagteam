@@ -1,0 +1,13 @@
+// Static landing page served by Cloudflare Workers (assets only, no script).
+// Deploy: scripts/deploy-site.sh  (`npx wrangler login` the first time)
+{
+  "name": "tagteam-site",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "tagteam.simonefolador.com", "custom_domain": true }
+  ]
+}

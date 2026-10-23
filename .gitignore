@@ -23,3 +23,8 @@ CCSwitcher/Info.plist
 
 # XcodeGen generated project
 CCSwitcher.xcodeproj/
+
+# Landing page (site/): the zip is copied in by hand, not in git (see scripts/deploy-site.sh)
+site/public/download/
+site/.wrangler/
+node_modules/

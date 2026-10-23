@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200, initial-scale=1">
+<title>Tagteam — social card</title>
+<!--
+  Fixed 1200 × 630 artwork. Fonts and app icon use local relative paths for offline rendering.
+  Render with Chromium at 1200 × 630, deviceScaleFactor 1, after document.fonts.ready, e.g. with Playwright:
+    page.setViewportSize({width:1200,height:630}); page.goto('file:///abs/Design/social-card.html');
+    page.evaluate(() => document.fonts.ready); page.screenshot({path: 'site/public/social-card.png'})
+  Typeface sources: Google Fonts, Fraunces (700) and Figtree (500), SIL Open Font License.
+  Artwork: assets/Tagteam-icon.png.
+-->
+<style>
+@font-face { font-family: "Fraunces"; font-style: normal; font-weight: 400 800; src: url("../site/public/fonts/fraunces-latin-v38.woff2") format("woff2"); }
+@font-face { font-family: "Fraunces"; font-style: italic; font-weight: 400 800; src: url("../site/public/fonts/fraunces-italic-latin-v38.woff2") format("woff2"); }
+@font-face { font-family: "Figtree"; font-style: normal; font-weight: 400 800; src: url("../site/public/fonts/figtree-latin-v9.woff2") format("woff2"); }
+@font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 400 600; src: url("../site/public/fonts/geist-mono-latin-v6.woff2") format("woff2"); }
+:root { --ivory: #f6f0e4; --slate: #26313c; --slate-d: #1c2833; --orange: #e86d45; --deep: #b8431f; --muted: #55626e; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+body { font-family: "Figtree", sans-serif; color: #1f2933; }
+.card { position: relative; width: 1200px; height: 630px; overflow: hidden; isolation: isolate; background: var(--ivory); }
+.tile { position: absolute; border-radius: 22%; z-index: -1; }
+.tile.a { width: 640px; height: 640px; right: -150px; top: -170px; background: var(--slate); opacity: .07; transform: rotate(8deg); }
+.tile.b { width: 520px; height: 520px; right: 60px; top: 190px; background: var(--orange); opacity: .12; transform: rotate(-8deg); }
+.copy { position: absolute; left: 80px; top: 0; bottom: 0; width: 650px; display: flex; flex-direction: column; justify-content: center; }
+.eyebrow { font-family: "Geist Mono", monospace; font-size: 20px; letter-spacing: .08em; text-transform: uppercase; color: var(--deep); display: flex; align-items: center; gap: 14px; }
+.eyebrow::before { content: ""; width: 38px; height: 2px; background: currentColor; }
+h1 { font-family: "Fraunces", serif; font-size: 92px; line-height: .98; letter-spacing: -.012em; word-spacing: .06em; font-weight: 700; margin: 24px 0 26px; font-variation-settings: "opsz" 96; }
+h1 em { font-style: italic; font-weight: 500; color: var(--deep); }
+p { margin: 0; font-size: 29px; line-height: 1.4; color: var(--muted); max-width: 17em; }
+.name { position: absolute; left: 80px; bottom: 48px; font-family: "Fraunces", serif; font-weight: 700; font-size: 30px; color: var(--slate-d); }
+.icon { position: absolute; right: 90px; top: 128px; width: 380px; height: 380px; filter: drop-shadow(0 34px 44px rgba(28,40,51,.3)); }
+</style>
+</head>
+<body>
+<div class="card">
+  <i class="tile a"></i><i class="tile b"></i>
+  <div class="copy">
+    <div class="eyebrow">Free macOS menu-bar app</div>
+    <h1>Hit a limit? <em>Tag in</em> a fresh account.</h1>
+    <p>Switch Claude Code and Codex accounts in one click, grouped into profiles.</p>
+  </div>
+  <div class="name">Tagteam</div>
+  <img class="icon" src="../assets/Tagteam-icon.png" alt="">
+</div>
+</body>
+</html>
