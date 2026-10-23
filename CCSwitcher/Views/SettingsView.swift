@@ -199,9 +199,9 @@ struct SettingsView: View {
 
     private var aboutTab: some View {
         VStack(spacing: 12) {
-            Image(systemName: "brain.head.profile")
-                .font(.system(size: 48))
-                .foregroundStyle(.brand)
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .frame(width: 64, height: 64)
 
             Text("Tagteam")
                 .font(.title2.weight(.bold))
@@ -223,12 +223,19 @@ struct SettingsView: View {
                 .padding(.horizontal, 40)
 
             VStack(spacing: 2) {
-                Link("More apps at xueshi.dev", destination: URL(string: "https://xueshi.dev")!)
+                Text("Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by [Xueshi Qiao](https://xueshi.dev)")
                     .font(.caption)
-                Text("© 2026 Xueshi Qiao")
+                Text("Codex support based on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese")
+                    .font(.caption)
+                Text(verbatim: "© 2026 Simone Folador")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 4)
+                Text("Portions © 2026 Xueshi Qiao")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
+            .multilineTextAlignment(.center)
             .padding(.top, 8)
         }
         .padding()
