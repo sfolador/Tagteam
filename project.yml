@@ -32,6 +32,9 @@ targets:
     sources:
       - path: CCSwitcher
       - path: Shared
+      # MIT requires the notice to ship with every copy, binaries included.
+      - path: LICENSE
+        buildPhase: resources
     info:
       path: CCSwitcher/Info.plist
       properties:

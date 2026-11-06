@@ -82,3 +82,7 @@ The Xcode target, scheme and source folders keep the original `CCSwitcher` name;
 ## Credits
 
 Tagteam is a fork of [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by Xueshi Qiao. Codex support is modelled on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese. Several macOS menu-bar techniques come from [CodexBar](https://github.com/steipete/CodexBar).
+
+## License
+
+[MIT](LICENSE). CCSwitcher and Codex Switcher are MIT-licensed too; their copyright notices are kept in the LICENSE file.
