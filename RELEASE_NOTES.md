@@ -1,29 +1,17 @@
-## Tagteam 2.0.0
+## Tagteam 2.1.0
 
-CCSwitcher is now **Tagteam**: one menu-bar app for your Claude Code **and** Codex accounts, grouped into profiles.
+### The Claude desktop app follows the switch
 
-### Codex accounts
+The Claude desktop app keeps its own login, so switching a Claude Code account used to leave it on the old one. Now each Claude account is linked to a desktop app profile: Tagteam matches them automatically, or you pick one in Settings → Claude Desktop. When you switch, if the desktop app is open on a different account, Tagteam quits it gracefully and reopens it on the new one. If the app doesn't quit within 15 seconds, Tagteam skips that step and tells you; the Claude Code switch still goes through. You can also open the desktop app as any account from the account's ⋯ menu.
 
-Add Codex accounts next to your Claude Code ones: log in from the app, or import the login the Codex CLI already uses. Switching an account swaps `~/.codex/auth.json`, and the app restarts what keeps the old login in memory: the Codex app-server and the ChatGPT (Codex) desktop app. Both are closed gracefully and reopened only if they were running. Each Codex account shows its 5-hour and weekly limits.
+Tagteam only reads which account each desktop profile belongs to, never its tokens.
 
-### Profiles
+### A Tagteam icon in the menu bar
 
-Group accounts into profiles such as **Personal** and **Work**. Picking a profile makes one Claude Code and one Codex account live at once, and limits the popover and auto-switch to that profile's accounts. An account can be in more than one profile. Manage profiles in Settings → Profiles.
+The menu bar now shows the Tagteam glyph instead of the generic head symbol. It follows light and dark menu bars, and fills in while a double-usage promotion is active. The setting is now called "Show Tagteam icon in menu bar"; your choice carries over.
 
-### A new popover
+### Open source under MIT
 
-- **Two columns:** accounts on the left, each with its limits, an inline Switch and a ⋯ menu. A compact cost summary and the last 14 days sit on the right.
-- **Profiles across the top**, with Settings and Quit as buttons at the bottom.
-- **No made-up numbers:** a missing reading shows "—", never 0%.
+Tagteam is MIT-licensed, like [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by Xueshi Qiao, which it is based on, and [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese, which its Codex support is modelled on. The app now includes the license with every copyright notice.
 
-### Also new
-
-- A new app icon.
-- Signed with a Developer ID and notarized by Apple, so it opens without Gatekeeper warnings.
-- Automatic updates are removed. Install new versions from the Releases page.
-
-### Upgrading from CCSwitcher
-
-Your accounts and settings carry over. Quit CCSwitcher, move Tagteam to Applications, and delete the old CCSwitcher app. On first launch macOS may ask once to allow keychain access. The widget fills in after the first refresh.
-
-Based on [CCSwitcher](https://github.com/XueshiQiao/CCSwitcher) by Xueshi Qiao. Codex support is modelled on [Codex Switcher](https://github.com/Lampese/codex-switcher) by Lampese.
+**Full Changelog**: https://github.com/sfolador/Tagteam/compare/v2.0.0...v2.1.0
