@@ -7,12 +7,30 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 DOWNLOADS="site/public/download"
-# Downloads are paused until the upstream licensing is settled: the page
-# ships without a download, and a stray zip must not be published with it.
-if [[ -e "$DOWNLOADS" ]]; then
-  echo "$DOWNLOADS exists, but downloads are paused. Move it out of site/public first." >&2
+for file in Tagteam.zip latest.json; do
+  if [[ ! -f "$DOWNLOADS/$file" ]]; then
+    echo "Missing $DOWNLOADS/$file: the site would go live with a broken Download button." >&2
+    exit 1
+  fi
+done
+
+# ditto, not unzip: unzip drops symlinks and breaks the code signature seal.
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+ditto -x -k "$DOWNLOADS/Tagteam.zip" "$TMP"
+xcrun stapler validate -q "$TMP/Tagteam.app" \
+  || { echo "$DOWNLOADS/Tagteam.zip does not hold a notarized Tagteam.app." >&2; exit 1; }
+
+PUBLISHED="$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$DOWNLOADS/latest.json")"
+INSIDE="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$TMP/Tagteam.app/Contents/Info.plist")"
+CURRENT="$(sed -n 's/^ *MARKETING_VERSION: *"\(.*\)"/\1/p' project.yml | head -1)"
+if [[ "$PUBLISHED" != "$INSIDE" ]]; then
+  echo "latest.json says $PUBLISHED but the app in the zip is $INSIDE." >&2
   exit 1
+fi
+if [[ "$PUBLISHED" != "$CURRENT" ]]; then
+  echo "Note: the site offers version $PUBLISHED, project.yml is at $CURRENT." >&2
 fi
 
 (cd site && npx --yes wrangler deploy)
-echo "Live: https://tagteam.simonefolador.com (no downloads)"
+echo "Live: https://tagteam.simonefolador.com (version $PUBLISHED)"
