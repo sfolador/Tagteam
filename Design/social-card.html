@@ -25,14 +25,18 @@ body { font-family: "Figtree", sans-serif; color: #1f2933; }
 .tile { position: absolute; border-radius: 22%; z-index: -1; }
 .tile.a { width: 640px; height: 640px; right: -150px; top: -170px; background: var(--slate); opacity: .07; transform: rotate(8deg); }
 .tile.b { width: 520px; height: 520px; right: 60px; top: 190px; background: var(--orange); opacity: .12; transform: rotate(-8deg); }
-.copy { position: absolute; left: 80px; top: 0; bottom: 0; width: 650px; display: flex; flex-direction: column; justify-content: center; }
+/* Copy and footer share one flex column, so a longer line pushes the footer instead of overlapping it. */
+.copy { position: absolute; left: 80px; top: 66px; bottom: 56px; width: 650px; display: flex; flex-direction: column; }
+.lede { margin: auto 0; }
 .eyebrow { font-family: "Geist Mono", monospace; font-size: 20px; letter-spacing: .08em; text-transform: uppercase; color: var(--deep); display: flex; align-items: center; gap: 14px; }
 .eyebrow::before { content: ""; width: 38px; height: 2px; background: currentColor; }
-h1 { font-family: "Fraunces", serif; font-size: 92px; line-height: .98; letter-spacing: -.012em; word-spacing: .06em; font-weight: 700; margin: 24px 0 26px; font-variation-settings: "opsz" 96; }
+h1 { font-family: "Fraunces", serif; font-size: 90px; line-height: .98; letter-spacing: -.012em; word-spacing: .06em; font-weight: 700; margin: 22px 0 24px; font-variation-settings: "opsz" 96; color: var(--slate-d); }
 h1 em { font-style: italic; font-weight: 500; color: var(--deep); }
-p { margin: 0; font-size: 29px; line-height: 1.4; color: var(--muted); max-width: 17em; }
-.name { position: absolute; left: 80px; bottom: 48px; font-family: "Fraunces", serif; font-weight: 700; font-size: 30px; color: var(--slate-d); }
-.icon { position: absolute; right: 90px; top: 128px; width: 380px; height: 380px; filter: drop-shadow(0 34px 44px rgba(28,40,51,.3)); }
+p { margin: 0; font-size: 29px; line-height: 1.38; color: var(--muted); max-width: 18em; }
+.foot { width: 560px; display: flex; align-items: baseline; gap: 16px; padding-top: 20px; border-top: 1.5px solid rgba(38,49,60,.14); }
+.name { font-family: "Fraunces", serif; font-weight: 700; font-size: 30px; color: var(--slate-d); }
+.url { font-family: "Geist Mono", monospace; font-size: 19px; letter-spacing: .02em; color: var(--muted); }
+.icon { position: absolute; right: 84px; top: 145px; width: 340px; height: 340px; filter: drop-shadow(0 34px 44px rgba(28,40,51,.3)); }
 </style>
 </head>
 <body>
@@ -40,10 +44,12 @@ p { margin: 0; font-size: 29px; line-height: 1.4; color: var(--muted); max-width
   <i class="tile a"></i><i class="tile b"></i>
   <div class="copy">
     <div class="eyebrow">Free macOS menu-bar app</div>
-    <h1>Hit a limit? <em>Tag in</em> a fresh account.</h1>
-    <p>Switch Claude Code and Codex accounts in one click, grouped into profiles.</p>
+    <div class="lede">
+      <h1>Hit a limit? <em>Tag in</em> a fresh account.</h1>
+      <p>Switch Claude Code and Codex accounts in one click.</p>
+    </div>
+    <div class="foot"><span class="name">Tagteam</span><span class="url">tagteam.simonefolador.com</span></div>
   </div>
-  <div class="name">Tagteam</div>
   <img class="icon" src="../assets/Tagteam-icon.png" alt="">
 </div>
 </body>
