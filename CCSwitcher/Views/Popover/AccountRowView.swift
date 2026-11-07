@@ -165,6 +165,16 @@ struct AccountRowView: View {
                 lines.append(String(localized: "\(weekly.label): \(value)", bundle: L10n.bundle))
             }
         }
+        if account.provider == .claudeCode {
+            for limit in appState.accountUsage[account.id]?.modelWeeklyLimits ?? [] {
+                let value = limit.window.utilization.map { "\(Int($0))%" } ?? "—"
+                if let reset = limit.window.resetsAtDate.map(resetCountdownString(until:)) {
+                    lines.append(String(localized: "\(limit.model): \(value) · resets \(reset)", bundle: L10n.bundle))
+                } else {
+                    lines.append(String(localized: "\(limit.model): \(value)", bundle: L10n.bundle))
+                }
+            }
+        }
         return lines.joined(separator: "\n")
     }
 

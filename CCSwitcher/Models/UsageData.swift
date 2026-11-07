@@ -11,6 +11,7 @@ struct UsageAPIResponse: Codable {
     let sevenDayCowork: UsageWindow?
     let iguanaNecktie: UsageWindow?
     let extraUsage: ExtraUsage?
+    let limits: UsageLimitList?
 
     enum CodingKeys: String, CodingKey {
         case fiveHour = "five_hour"
@@ -21,6 +22,74 @@ struct UsageAPIResponse: Codable {
         case sevenDayCowork = "seven_day_cowork"
         case iguanaNecktie = "iguana_necktie"
         case extraUsage = "extra_usage"
+        case limits
+    }
+
+    /// Weekly limits that apply to a single model (e.g. Fable), reported only in
+    /// the `limits` array as `kind: "weekly_scoped"` with `scope.model.display_name`.
+    var modelWeeklyLimits: [ModelScopedLimit] {
+        (limits?.items ?? []).compactMap { limit in
+            guard limit.kind == "weekly_scoped",
+                  let name = limit.scope?.model?.displayName, !name.isEmpty else { return nil }
+            return ModelScopedLimit(
+                model: name,
+                window: UsageWindow(utilization: limit.percent, resetsAt: limit.resetsAt)
+            )
+        }
+    }
+}
+
+struct ModelScopedLimit: Identifiable {
+    let model: String
+    let window: UsageWindow
+    var id: String { model }
+}
+
+/// The `limits` array is newer and less settled than the legacy window keys, so
+/// it decodes leniently: a shape change yields no entries instead of failing
+/// the whole usage response (which would also hide the 5h/7d bars).
+struct UsageLimitList: Codable {
+    let items: [UsageLimit]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        items = (try? container.decode([LossyLimit].self))?.compactMap(\.value) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(items)
+    }
+
+    private struct LossyLimit: Decodable {
+        let value: UsageLimit?
+        init(from decoder: Decoder) throws {
+            value = try? UsageLimit(from: decoder)
+        }
+    }
+}
+
+struct UsageLimit: Codable {
+    let kind: String?
+    let percent: Double?
+    let resetsAt: String?
+    let scope: Scope?
+
+    enum CodingKeys: String, CodingKey {
+        case kind, percent, scope
+        case resetsAt = "resets_at"
+    }
+
+    struct Scope: Codable {
+        let model: Model?
+    }
+
+    struct Model: Codable {
+        let displayName: String?
+
+        enum CodingKeys: String, CodingKey {
+            case displayName = "display_name"
+        }
     }
 }
 

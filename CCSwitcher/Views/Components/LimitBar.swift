@@ -17,6 +17,9 @@ struct LimitBar: View {
     var style: Style = .regular
     /// Trailing reset text, e.g. "32 min" (regular style only).
     var reset: String? = nil
+    /// Widened by callers that mix "5h"/"7d" with model names like "Fable",
+    /// so every bar in the group still starts at the same x.
+    var labelWidth: CGFloat = 22
 
     private var known: Double? {
         guard let utilization, utilization.isFinite else { return nil }
@@ -50,7 +53,8 @@ struct LimitBar: View {
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.textSecondary)
-                .frame(width: 22, alignment: .leading)
+                .lineLimit(1)
+                .frame(width: labelWidth, alignment: .leading)
 
             track(height: 6)
                 .frame(height: 6)

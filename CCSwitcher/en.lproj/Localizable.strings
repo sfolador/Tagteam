@@ -37,6 +37,7 @@
 /* Usage Dashboard */
 "Active" = "Active";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "Estimated API-equivalent cost of your Claude Code usage, for reference only.";
+"Weekly limit for %@" = "Weekly limit for %@";
 "Extra usage" = "Extra usage";
 "On" = "On";
 "Off" = "Off";

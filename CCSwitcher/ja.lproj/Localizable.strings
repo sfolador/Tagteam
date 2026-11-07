@@ -37,6 +37,7 @@
 /* Usage Dashboard */
 "Active" = "アクティブ";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "Claude Code 使用量の API 換算コスト（参考値）。";
+"Weekly limit for %@" = "%@ の週間上限";
 "Extra usage" = "追加使用量";
 "On" = "オン";
 "Off" = "オフ";

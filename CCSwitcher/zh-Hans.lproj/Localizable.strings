@@ -37,6 +37,7 @@
 /* Usage Dashboard */
 "Active" = "活跃";
 "Estimated API-equivalent cost of your Claude Code usage, for reference only." = "预估 Claude Code 使用的 API 等效费用，仅供参考。";
+"Weekly limit for %@" = "%@ 每周限额";
 "Extra usage" = "额外用量";
 "On" = "开启";
 "Off" = "关闭";

@@ -229,11 +229,18 @@ struct ProviderGroupView: View {
     private func claudeLimits(_ account: Account) -> some View {
         let usage = appState.accountUsage[account.id]
         if let usage, usage.fiveHour != nil || usage.sevenDay != nil {
+            let modelLimits = usage.modelWeeklyLimits
+            let labelWidth: CGFloat = modelLimits.isEmpty ? 22 : 40
             if let w = usage.fiveHour {
-                limitRow(label: "5h", utilization: w.utilization, kind: .session, reset: w.resetsAtDate.map(resetCountdownString(until:)))
+                limitRow(label: "5h", utilization: w.utilization, kind: .session, reset: w.resetsAtDate.map(resetCountdownString(until:)), labelWidth: labelWidth)
             }
             if let w = usage.sevenDay {
-                limitRow(label: "7d", utilization: w.utilization, kind: .weekly, reset: w.resetsAtDate.map(resetCountdownString(until:)))
+                limitRow(label: "7d", utilization: w.utilization, kind: .weekly, reset: w.resetsAtDate.map(resetCountdownString(until:)), labelWidth: labelWidth)
+            }
+            ForEach(modelLimits) { limit in
+                HoverTip(String(localized: "Weekly limit for \(limit.model)", bundle: L10n.bundle)) {
+                    limitRow(label: limit.model, utilization: limit.window.utilization, kind: .weekly, reset: limit.window.resetsAtDate.map(resetCountdownString(until:)), labelWidth: labelWidth)
+                }
             }
             extraUsageRow(usage.extraUsage)
             staleHint(appState.accountUsageSampledAt[account.id])
@@ -292,12 +299,13 @@ struct ProviderGroupView: View {
     }
 
     /// A missing reading is never drawn as 0%: `LimitBar` shows a neutral track and an em dash.
-    private func limitRow(label: String, utilization: Double?, kind: LimitBarKind, reset: String?) -> some View {
+    private func limitRow(label: String, utilization: Double?, kind: LimitBarKind, reset: String?, labelWidth: CGFloat = 22) -> some View {
         LimitBar(
             label: label,
             utilization: utilization,
             color: utilization.map { menuBarConfig.limitBarColor(for: kind, utilization: $0, context: .dashboard) } ?? .clear,
-            reset: reset
+            reset: reset,
+            labelWidth: labelWidth
         )
     }
 
